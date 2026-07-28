@@ -1,0 +1,125 @@
+---
+title: "UDP"
+description: "The lightweight, connectionless counterpart to TCP — no guarantees, no handshake, and exactly why that's sometimes the better choice."
+difficulty: "Intermediate"
+---
+
+## Definition
+
+UDP (User Datagram Protocol) is a transport-layer protocol that sends independent packets ("datagrams") without establishing a connection, without guaranteeing delivery, order, or duplicate protection — the opposite set of trade-offs from [TCP](/docs/networking/tcp).
+
+## Why it exists
+
+TCP's reliability guarantees (retransmission, ordering, connection setup) come with real costs: handshake latency and head-of-line blocking. UDP exists for the class of applications where those costs aren't worth paying — where a late or duplicate packet is actively worse than a dropped one, and the application would rather handle loss itself (or simply tolerate it) than wait for the network layer to guarantee delivery.
+
+## The problem it solves
+
+For real-time applications, waiting for TCP to retransmit a lost packet — and blocking all subsequently arrived data behind it — can be worse than just moving on without that data at all. A live video call doesn't want to freeze waiting for a half-second-old dropped frame to be retransmitted; it wants to display the next, current frame right away. UDP solves this by giving the application full control: send packets, and let the application decide what to do about loss, rather than forcing a specific reliability policy on every use case.
+
+## Real-world analogy
+
+TCP is a certified, tracked mail service that guarantees delivery, confirms receipt, and resends anything lost — reliable, but with real overhead and delay for anything urgent. UDP is like shouting a message across a room: fast, no acknowledgment required, and if someone doesn't hear it, nobody automatically repeats it for you — the sender has to notice and decide whether to shout again.
+
+## Simple explanation
+
+UDP just sends packets. No handshake before sending, no guarantee they arrive, no guarantee of order, no automatic retransmission. In exchange, it has essentially no setup latency and no head-of-line blocking — each packet is independent.
+
+## Technical explanation
+
+| | TCP | UDP |
+|---|---|---|
+| Connection | Yes (handshake required) | No (connectionless) |
+| Reliability | Guaranteed delivery, retransmits lost packets | None — packets can be lost silently |
+| Ordering | Guaranteed | Not guaranteed |
+| Overhead | Higher (sequence numbers, ACKs, congestion control) | Minimal |
+| Head-of-line blocking | Yes | No — each packet is independent |
+| Typical uses | Web traffic, databases, file transfer | DNS, live video/audio, gaming, VoIP |
+
+## Internal working
+
+A UDP packet just has a small header (source/destination port, length, checksum) and the payload — no sequence numbers, no connection state maintained by the protocol. The application is entirely responsible for anything beyond "did the checksum pass" — detecting loss, deciding whether/how to recover, and handling out-of-order arrival if it matters for that use case.
+
+```mermaid
+flowchart LR
+    A[Application] -->|send datagram| B[UDP]
+    B -->|no handshake, no ack| C[Network]
+    C --> D[Receiver UDP]
+    D -->|deliver as-is, or drop silently on error| E[Receiving Application]
+```
+
+## Advantages
+
+- No handshake latency — a packet can be sent immediately, with no round trip needed to establish a connection first.
+- No head-of-line blocking — a lost packet doesn't block delivery of subsequent, successfully-received packets, unlike TCP.
+- Lower overhead per packet, useful for high-frequency, small messages (e.g. game state updates sent many times per second).
+
+## Disadvantages
+
+- No delivery guarantee — packets can simply vanish, with no automatic recovery.
+- No ordering guarantee — packets can arrive in a different order than sent.
+- Applications needing any reliability at all must implement it themselves, on top of UDP, if they need it (as QUIC — the protocol underlying HTTP/3 — does).
+
+## Trade-offs
+
+UDP trades all of TCP's reliability guarantees for minimal overhead and no head-of-line blocking — the right trade for applications where fresh, current data matters more than complete, ordered data (real-time media), and the wrong trade for anything needing guaranteed, ordered delivery (most everything else).
+
+## Complexity considerations
+
+Building anything requiring partial reliability directly on UDP (as QUIC does) is genuinely complex — reimplementing useful pieces of what TCP already provides, but selectively, to avoid the specific costs (head-of-line blocking) that matter for the use case. This is real, specialized engineering work, not a simple choice to make lightly.
+
+## When to use
+
+- DNS queries — a simple request/response where a lost query can just be retried by the application, faster than paying for a full TCP handshake for a tiny query.
+- Real-time audio/video (VoIP, live streaming, video calls) — a late frame retransmitted after the moment has passed is worse than a dropped frame skipped entirely.
+- Online multiplayer games — frequent, small state updates where the newest update matters far more than guaranteed delivery of every single one.
+
+## When NOT to use
+
+- Anything requiring guaranteed, complete, ordered delivery — file transfers, most web APIs, database connections, financial transactions. Use TCP (or a protocol built on it, like HTTP).
+
+## Common mistakes
+
+- Choosing UDP for a use case that actually needs reliable delivery, without building the necessary reliability logic on top — leading to silent data loss in production.
+- Assuming UDP is inherently "faster" in every sense — it has lower overhead and no handshake, but doesn't move data any faster over the wire than TCP does; the benefit is specifically the avoided handshake and head-of-line-blocking costs.
+
+## Interview questions
+
+- "Why does DNS use UDP instead of TCP for most queries?"
+- "Why would a live video call prefer to drop a frame rather than wait for it to be retransmitted?"
+- "What would you need to build on top of UDP if your application needed some reliability guarantees, without adopting full TCP?"
+
+## Practical example
+
+A multiplayer game sends player position updates over UDP dozens of times per second — if one update is lost, it doesn't matter, because a newer position update is already on its way and will arrive moments later; retransmitting a stale position would actually be counterproductive.
+
+## Production example
+
+QUIC, the transport protocol underlying HTTP/3, is built on UDP specifically to get TCP-like reliability where it's needed while avoiding TCP's head-of-line blocking — reimplementing retransmission and ordering *per-stream* rather than for the whole connection, so one lost packet only blocks the specific stream it belongs to.
+
+## Best practices
+
+- Choose UDP deliberately for use cases where its trade-offs (no guaranteed delivery/ordering, minimal overhead) genuinely fit — not as a default "faster" choice.
+- If partial reliability is needed on top of UDP, look at proven approaches (like QUIC's design) rather than building ad-hoc retransmission logic from scratch.
+
+## Summary
+
+UDP sends independent packets with no connection setup and no delivery, ordering, or duplication guarantees — the opposite of TCP's reliability model. It's the right choice specifically when low latency and avoiding head-of-line blocking matter more than guaranteed, ordered delivery, as in DNS queries, real-time media, and gaming.
+
+## References
+
+- RFC 768 (UDP specification)
+- RFC 9000 (QUIC)
+
+<Quiz questions={[
+  {
+    q: "Why might a live video call prefer UDP over TCP?",
+    options: [
+      "UDP transfers data at a higher raw bandwidth",
+      "A dropped, stale frame is worse to wait for and retransmit than to simply skip in favor of the next, current frame",
+      "TCP doesn't support video data",
+      "UDP is always more secure"
+    ],
+    answer: 1,
+    explanation: "Real-time media prioritizes freshness over completeness — TCP's guaranteed, in-order retransmission would force waiting for old, now-irrelevant data, which is worse for the user experience than simply moving on with UDP."
+  }
+]} />

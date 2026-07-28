@@ -1,0 +1,121 @@
+---
+title: "Load Distribution"
+description: "The general principle of spreading work across multiple resources — the idea underlying load balancers, sharding, and partitioning alike."
+difficulty: "Beginner"
+---
+
+## Definition
+
+Load distribution is the general practice of spreading incoming work — requests, data, or computation — across multiple resources so that no single resource becomes a bottleneck or a single point of failure. Load balancing (for requests) and sharding (for data) are both specific applications of this same underlying idea.
+
+## Why it exists
+
+Once a system has more than one server, database node, or worker, someone (or something) has to decide which unit of work goes where. Load distribution exists to make that decision well: spreading work evenly enough that all resources are used efficiently, without any one of them being overwhelmed while others sit idle.
+
+## The problem it solves
+
+Without deliberate load distribution, real-world traffic is rarely naturally even — some users are more active than others, some data is "hotter" than other data, and naive routing (e.g. always picking the first available server) can leave some nodes idle while others are overloaded. Load distribution strategies solve this by routing work according to a policy designed to keep resources balanced.
+
+## Real-world analogy
+
+A supermarket with ten checkout lanes but only one open, with customers randomly picking any lane whether or not it has a line, doesn't distribute load well — some lanes back up while others sit empty. A good approach — like a single line feeding into whichever register frees up next — distributes load evenly regardless of how many customers are in the store at any moment.
+
+## Simple explanation
+
+Load distribution shows up at multiple layers of a system, and the underlying idea is identical each time — spread work across multiple resources instead of concentrating it on one:
+
+- **Requests across servers** → load balancing (see [Load Balancing: Algorithms](/docs/load-balancing/algorithms)).
+- **Data across database nodes** → sharding (see [Sharding](/docs/databases/sharding)).
+- **Cache keys across cache nodes** → consistent hashing (see [Consistent Hashing](/docs/distributed-systems/consistent-hashing)).
+- **Messages across consumers** → partitioned queues (see [Kafka](/docs/messaging/kafka)).
+
+## Technical explanation
+
+The core mechanism in almost every load distribution strategy is some form of **hashing or routing key** that maps a unit of work to a specific resource — deterministically enough that the same request/data reliably lands on the same resource (important for caching and data lookups), while spreading different keys evenly across all available resources.
+
+```mermaid
+flowchart LR
+    A[Incoming request/data] --> B{Routing decision}
+    B -->|hash(key) mod N| C[Resource 1]
+    B -->|hash(key) mod N| D[Resource 2]
+    B -->|hash(key) mod N| E[Resource 3]
+```
+
+## Internal working — a naive vs. better approach
+
+A naive approach — `hash(key) % N` where N is the number of resources — works, but breaks badly when N changes (adding or removing a resource): nearly every key's target resource changes at once, causing a massive, unnecessary reshuffling of data or connections. This specific problem is what [Consistent Hashing](/docs/distributed-systems/consistent-hashing) solves, by ensuring only a small fraction of keys move when the resource count changes.
+
+## Advantages of good load distribution
+
+- Uses available resources efficiently — no idle capacity sitting next to an overloaded node.
+- Improves resilience — a well-distributed system loses only a fraction of capacity if one resource fails, rather than concentrating critical load on a single point.
+
+## Disadvantages / challenges
+
+- Perfectly even distribution is hard when the underlying data or traffic is itself uneven (a small number of very "hot" keys — a viral post, a celebrity's account) — this is the "hot key" or "hot partition" problem.
+- Adding or removing resources ideally shouldn't require reshuffling everything — naive hashing schemes get this wrong, requiring more thoughtful approaches like consistent hashing.
+
+## Trade-offs
+
+Simpler distribution schemes (naive modulo hashing) are easy to implement but handle resource changes poorly. More sophisticated schemes (consistent hashing, dedicated routing services) handle scaling and failures more gracefully but add implementation and operational complexity.
+
+## Complexity considerations
+
+Distributing stateless work (requests) is comparatively simple — any server can handle any request. Distributing stateful work (data) is harder, because the data itself has to physically live somewhere specific, and moving it later (rebalancing) is expensive — this is why data distribution strategy deserves more upfront design thought than request distribution.
+
+## When to invest in careful load distribution
+
+- Any system with more than one server or data node, where uneven distribution could leave some resources idle while others are saturated.
+- Systems with known "hot" keys or users (viral content, popular accounts) where naive distribution would concentrate load dangerously.
+
+## When simpler approaches are fine
+
+- Small systems with only a couple of resources and predictable, roughly even load, where the complexity of sophisticated distribution schemes isn't yet justified.
+
+## Common mistakes
+
+- Using naive modulo hashing for anything that will need to scale (add/remove nodes) later, causing massive unnecessary data movement each time.
+- Not accounting for uneven ("hot") keys — a load distribution scheme that's perfectly even on average can still have one node overwhelmed by a single disproportionately popular key.
+- Conflating load distribution (spreading work across resources) with load *balancing* specifically (the request-routing subset of this idea) — sharding and consistent hashing are load distribution too, just for data rather than requests.
+
+## Interview questions
+
+- "How would you distribute this data/traffic across N nodes, and what happens when N changes?"
+- "What would you do about a single very hot key that's overwhelming one node, even though the rest are fine?"
+- "Why is naive `hash(key) % N` a bad long-term choice for distributing data across a growing number of nodes?"
+
+## Practical example
+
+A distributed cache with 10 nodes, storing user session data keyed by user ID — using consistent hashing rather than naive modulo hashing means that adding an 11th node only requires moving roughly 1/11th of the existing keys, rather than remapping almost everything.
+
+## Production example
+
+Amazon's Dynamo paper explicitly popularized consistent hashing specifically to solve the load distribution problem at scale — evenly spreading data across a cluster of nodes while minimizing data movement when nodes are added or removed, a technique now used by Cassandra, DynamoDB, and many other distributed data stores.
+
+## Best practices
+
+- Prefer consistent hashing (or an equivalent scheme) over naive modulo hashing for any data distribution that will need to scale.
+- Monitor for hot keys/partitions explicitly — average load being balanced doesn't guarantee no single resource is overwhelmed.
+- Distinguish stateless load distribution (simple — any resource can serve any request) from stateful load distribution (harder — data has a specific home and moving it is costly) early in a design.
+
+## Summary
+
+Load distribution is the general principle — spread work across multiple resources to avoid bottlenecks and single points of failure — underlying load balancing, sharding, and consistent hashing alike. The main engineering challenge is handling uneven ("hot") load gracefully and minimizing disruption when the number of resources changes.
+
+## References
+
+- DeCandia et al., "Dynamo: Amazon's Highly Available Key-value Store" (2007)
+
+<Quiz questions={[
+  {
+    q: "What's the main problem with naive `hash(key) % N` distribution when N (the number of resources) changes?",
+    options: [
+      "It's too slow to compute",
+      "Almost every key's assigned resource changes at once, causing massive unnecessary data movement",
+      "It only works for exactly 2 resources",
+      "There's no actual problem with this approach"
+    ],
+    answer: 1,
+    explanation: "Because the modulo result depends directly on N, changing N remaps nearly every key to a different resource — this is exactly the problem consistent hashing is designed to avoid."
+  }
+]} />

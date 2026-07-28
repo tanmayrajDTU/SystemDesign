@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-bg text-ink dark:bg-bg-dark dark:text-ink-dark font-body antialiased;
+}
+
+/* Custom thin scrollbar for sidebar / toc */
+.scroll-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  @apply bg-border dark:bg-border-dark rounded-full;
+}
+
+/* Reduced motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Visible keyboard focus */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #4c8dff;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Prose (mdx content) tuning */
+.prose-docs {
+  @apply prose dark:prose-invert prose-headings:font-display prose-headings:font-semibold
+    prose-h1:text-3xl prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-4 prose-h3:text-lg
+    prose-a:text-signal-600 dark:prose-a:text-signal-400 prose-a:no-underline hover:prose-a:underline
+    prose-code:before:content-none prose-code:after:content-none
+    prose-code:bg-surface-raised dark:prose-code:bg-surface-raised-dark prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+    prose-pre:bg-transparent prose-pre:p-0
+    max-w-none;
+}
+
+/* Reading progress bar */
+#reading-progress {
+  transform-origin: left;
+}
+
+/* Mermaid container */
+.mermaid-wrap {
+  @apply flex justify-center overflow-x-auto rounded-xl border border-border dark:border-border-dark bg-surface-raised dark:bg-surface-raised-dark p-4 my-6;
+}
+
+/* shiki code block line highlighting */
+[data-rehype-pretty-code-fragment] {
+  @apply block;
+}
+[data-rehype-pretty-code-fragment] pre {
+  @apply overflow-x-auto py-4 px-0 text-sm leading-relaxed;
+}
+[data-rehype-pretty-code-fragment] code {
+  @apply grid;
+  counter-reset: line;
+}
+[data-rehype-pretty-code-fragment] code[data-line-numbers] > [data-line]::before {
+  counter-increment: line;
+  content: counter(line);
+  @apply mr-4 inline-block w-4 text-right text-ink-muted dark:text-ink-muted-dark;
+}
+[data-rehype-pretty-code-fragment] [data-line] {
+  @apply px-4 border-l-2 border-transparent;
+}
+[data-rehype-pretty-code-fragment] [data-highlighted-line] {
+  @apply border-signal-500 bg-signal-500/10;
+}

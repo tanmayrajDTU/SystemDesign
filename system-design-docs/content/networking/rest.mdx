@@ -1,0 +1,137 @@
+---
+title: "REST"
+description: "The dominant architectural style for web APIs — resources, uniform interfaces, and why 'RESTful' is more of a spectrum than a strict rule."
+difficulty: "Beginner"
+---
+
+## Definition
+
+REST (Representational State Transfer) is an architectural style for designing networked APIs around **resources** — nouns like `users` or `orders` — manipulated through a small, uniform set of operations (typically HTTP methods: GET, POST, PUT, PATCH, DELETE).
+
+## Why it exists
+
+Before REST became dominant, APIs were often designed as arbitrary remote procedure calls with inconsistent, ad-hoc conventions per endpoint. REST, described by Roy Fielding in his 2000 dissertation, exists to give API design a consistent, predictable structure: if you understand the pattern for one resource, you understand it for all of them.
+
+## The problem it solves
+
+Inconsistent API design forces every client integration to relearn conventions from scratch for every single endpoint. REST solves this by mapping API operations onto a small, well-understood, uniform interface (HTTP methods on resource URLs) that most developers already understand from the web itself.
+
+## Real-world analogy
+
+REST is like a well-organized filing cabinet where every drawer follows the same labeling convention — you don't need instructions for each individual drawer once you understand the system: `/users/123` is drawer "users," folder "123," and the same predictable action (open, replace, remove the folder) applies whether it's users, orders, or products.
+
+## Simple explanation
+
+- URLs represent **resources**: `/users/123`, `/orders/456`.
+- HTTP methods represent **actions** on those resources: GET (read), POST (create), PUT/PATCH (update), DELETE (remove).
+- Responses represent the resource's current **representation**, typically as JSON.
+
+## Technical explanation
+
+### A typical REST resource design
+
+```
+GET    /users          → list users
+POST   /users          → create a user
+GET    /users/123      → get a specific user
+PUT    /users/123      → replace a specific user entirely
+PATCH  /users/123      → partially update a specific user
+DELETE /users/123      → delete a specific user
+```
+
+### Fielding's REST constraints
+
+The formal definition includes several architectural constraints, most notably:
+
+- **Client-server separation** — the client and server evolve independently.
+- **Statelessness** — every request contains all information needed to process it; the server holds no client session state between requests.
+- **Cacheability** — responses explicitly indicate whether they can be cached.
+- **Uniform interface** — a consistent way of identifying and manipulating resources.
+- **Layered system** — clients can't necessarily tell whether they're talking directly to the origin server or through intermediaries (proxies, gateways).
+
+<Callout type="note" title="'RESTful' is often used loosely">
+Most APIs called "REST APIs" in industry don't strictly follow every one of Fielding's original constraints (notably, few implement HATEOAS — hypermedia links guiding clients to related actions). In practice, "REST" usually just means "resource-oriented HTTP API using standard methods and JSON," which is a looser but far more common usage.
+</Callout>
+
+## Internal working — statelessness in practice
+
+Because REST requires statelessness, any information the server needs to process a request (authentication, pagination cursor, etc.) must be included in the request itself — typically via headers (`Authorization: Bearer ...`) or query parameters — rather than relying on server-side session memory from a previous request. This is precisely what makes REST APIs trivial to scale horizontally: any server can handle any request, since no server holds client-specific state between calls.
+
+## Advantages
+
+- Widely understood — most developers already know HTTP methods and status codes, making REST APIs easy to learn and integrate with.
+- Statelessness makes horizontal scaling straightforward.
+- Leverages existing HTTP infrastructure (caching, proxies, load balancers) without needing a custom protocol layer.
+
+## Disadvantages
+
+- **Over-fetching / under-fetching**: a resource endpoint often returns more data than a client needs (over-fetching) or requires multiple round trips to assemble related data (under-fetching) — a problem [GraphQL](/docs/networking/graphql) was specifically designed to address.
+- Not ideal for real-time, bidirectional communication (see [WebSockets](/docs/networking/websockets)).
+- Versioning and evolving a REST API over time (without breaking existing clients) requires deliberate discipline.
+
+## Trade-offs
+
+REST's simplicity and universal familiarity comes at the cost of flexibility per-request — a client gets exactly what a given endpoint returns, no more, no less, which is efficient when the shape matches what's needed and wasteful when it doesn't.
+
+## Complexity considerations
+
+Simple CRUD-style resources map to REST very naturally. Operations that don't fit the resource/verb model well (e.g. "calculate a shipping estimate," which isn't really a resource) often end up as slightly awkward POST endpoints (`POST /shipping-estimates`) rather than a clean fit for GET/PUT/DELETE.
+
+## When to use
+
+The default choice for most public and internal web APIs — well understood by client developers, works naturally with HTTP caching and tooling, and suits typical resource-oriented (CRUD) data models well.
+
+## When NOT to use (or not exclusively)
+
+- Real-time bidirectional needs — use [WebSockets](/docs/networking/websockets).
+- Clients needing highly flexible, precisely-shaped queries across many related resources in one round trip — consider [GraphQL](/docs/networking/graphql).
+- Extremely high-throughput, low-latency internal service-to-service calls — consider [gRPC](/docs/networking/grpc).
+
+## Common mistakes
+
+- Using the wrong HTTP method for the operation's actual semantics (e.g. a GET request that has side effects).
+- Not versioning the API, making backward-incompatible changes that break existing clients unexpectedly.
+- Returning 200 OK for error conditions instead of appropriate status codes, forcing clients to parse response bodies to detect failures.
+
+## Interview questions
+
+- "Design the REST API for [some resource] — what methods and URL structure would you use?"
+- "How would you version this REST API without breaking existing clients?"
+- "What's the trade-off between designing a REST API vs. a GraphQL API for this use case?"
+
+## Practical example
+
+The [URL Shortener case study](/docs/case-studies/url-shortener)'s API — `POST /api/v1/shorten` to create a short link, `GET /:shortCode` to redirect — is a straightforward, resource-oriented REST design, with the redirect itself using the HTTP status code (302) to convey its specific meaning rather than a custom response format.
+
+## Production example
+
+Stripe's API is widely regarded as an exemplary REST API design: consistent resource naming, predictable use of HTTP methods and status codes, and clear versioning via a dated API version header rather than breaking existing integrations.
+
+## Best practices
+
+- Model URLs around resources (nouns), not actions (verbs) — `/orders/123/cancel` as a POST is more RESTful than `/cancelOrder?id=123`.
+- Use HTTP status codes meaningfully and consistently, not just 200 for everything.
+- Version APIs explicitly (URL path or header) from the start, since breaking changes are inevitable over a service's lifetime.
+
+## Summary
+
+REST is an architectural style organizing APIs around resources manipulated via a uniform set of HTTP methods, emphasizing statelessness (which enables trivial horizontal scaling) and leveraging existing HTTP infrastructure. It's the right default for most web APIs, though its fixed-shape responses can lead to over/under-fetching that alternatives like GraphQL specifically address.
+
+## References
+
+- Roy Fielding, "Architectural Styles and the Design of Network-based Software Architectures" (2000)
+- Stripe API documentation (as a widely cited example of REST done well)
+
+<Quiz questions={[
+  {
+    q: "What does REST's statelessness constraint actually require?",
+    options: [
+      "Servers must never store any data at all",
+      "Every request must contain all the information needed to process it, without relying on server-side session memory from previous requests",
+      "Clients can't send any headers",
+      "Responses must always be cached"
+    ],
+    answer: 1,
+    explanation: "Statelessness means the server doesn't retain client-specific context between requests — each request is self-contained, which is exactly what makes it trivial to route any request to any server."
+  }
+]} />

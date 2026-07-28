@@ -1,0 +1,160 @@
+---
+title: "CAP Theorem"
+description: "Why a distributed database can give you at most two of Consistency, Availability, and Partition Tolerance — and why that's the wrong way to think about it in practice."
+difficulty: "Intermediate"
+---
+
+## Definition
+
+The CAP theorem states that a distributed data store can provide at most **two** of the following three guarantees simultaneously:
+
+- **Consistency (C)** — every read receives the most recent write, or an error.
+- **Availability (A)** — every request receives a (non-error) response, without guarantee it's the most recent write.
+- **Partition Tolerance (P)** — the system keeps operating despite network partitions (dropped or delayed messages between nodes).
+
+## Why it exists
+
+Distributed systems run on multiple machines connected by an unreliable network. Networks partition — cables get cut, switches fail, packets get delayed. CAP exists because it formalizes an unavoidable question: **when the network breaks and two nodes can't talk to each other, what does the system do?**
+
+## The problem it solves
+
+Before CAP was formalized (Eric Brewer, 2000; proven by Gilbert & Lynch, 2002), engineers argued informally about consistency vs. availability without a shared framework. CAP gives a precise vocabulary: it tells you the trade-off is **not optional** once a partition happens — you must choose.
+
+## Real-world analogy
+
+Imagine two bank branches in different cities, connected by a phone line that occasionally goes dead. A customer walks into Branch A and withdraws the last $100 from a shared account. At that exact moment, the phone line to Branch B dies.
+
+- If Branch B **refuses to serve any customer** until it can confirm the account balance with Branch A, it has chosen **Consistency** over Availability.
+- If Branch B **lets a customer withdraw money anyway**, based on its last-known balance, it has chosen **Availability** over Consistency — and now the account might go negative.
+
+Both branches stay open (partition tolerance is assumed — the phone line *will* go down sometimes). The real decision is what Branch B does when it can't reach Branch A.
+
+## Simple explanation
+
+Partitions **will** happen — P isn't really optional in a real distributed system, the network doesn't ask permission. So CAP in practice reduces to: **when a partition happens, do you choose C or A?**
+
+- **CP systems** refuse requests they can't guarantee are consistent. Example: a majority-quorum system like etcd or ZooKeeper.
+- **AP systems** keep responding even if the response might be stale. Example: DNS, or Cassandra in its default configuration.
+
+## Technical explanation
+
+```mermaid
+flowchart TD
+    subgraph Normal["Normal operation - no partition"]
+        N1[Node A] <--> N2[Node B]
+    end
+    subgraph Partitioned["Network partition"]
+        P1[Node A] -.x.- P2[Node B]
+        P1 --> C1{Choose: Consistency or Availability}
+        C1 -->|CP: refuse request| R1[Return error until\nconsistency restored]
+        C1 -->|AP: serve anyway| R2[Return possibly stale\ndata, reconcile later]
+    end
+```
+
+Under normal operation (no partition), a well-designed system can actually offer both consistency and availability — CAP only forces a choice **during** a partition. This is the most commonly misunderstood part of the theorem.
+
+## Internal working
+
+Concretely, when Node A can't reach Node B for a write acknowledgment:
+
+- A **CP** system (e.g. using Raft or Paxos consensus) requires a majority of nodes to agree before acknowledging a write or serving a read. If a majority isn't reachable, it returns an error rather than risk inconsistency.
+- An **AP** system serves the read or write from whatever nodes are reachable, and reconciles conflicting versions later — often using techniques like **vector clocks** or **last-write-wins** — once the partition heals.
+
+## Advantages / disadvantages by choice
+
+**Choosing CP:**
+- ✅ No stale reads, no lost writes.
+- ❌ System becomes unavailable during partitions — some users get errors.
+
+**Choosing AP:**
+- ✅ System stays responsive even during network issues.
+- ❌ Different nodes can temporarily disagree; requires conflict resolution logic.
+
+## Trade-offs
+
+CAP is often mis-taught as "pick 2 of 3, always." In reality:
+
+- Partition tolerance isn't a choice for any system with more than one node on a real network — you must handle it.
+- The actual trade-off is C vs. A, **and only during an active partition**.
+- Most systems are consistent and available in the (much more common) non-partitioned case, and only reveal their CP/AP nature during rare failures.
+
+<Callout type="warning" title="Common misconception">
+CAP does not say "you must sacrifice consistency or availability all the time." It only forces a choice during a network partition. This is why PACELC (covered next) is often a more useful mental model for everyday design decisions.
+</Callout>
+
+## Complexity considerations
+
+Choosing CP generally requires implementing or adopting a consensus protocol (Raft, Paxos, or a quorum system), which adds real operational complexity: leader election, log replication, and careful handling of split-brain scenarios. Choosing AP pushes complexity into conflict resolution at the application layer instead.
+
+## When to use CP
+
+- Financial transactions, inventory counts, anything where reading stale or conflicting data causes real harm (e.g. double-spending).
+- Systems with a natural "single source of truth" requirement (e.g. leader election in a distributed lock service).
+
+## When to use AP
+
+- Social media feeds, product catalogs, DNS, shopping cart contents — cases where showing slightly stale data is a much smaller problem than showing an error page.
+- Systems that must stay available across many geographic regions where partitions are common.
+
+## Common mistakes
+
+- Treating CAP as a permanent, all-the-time trade-off rather than one that applies specifically during partitions.
+- Assuming "consistency" in CAP means the same thing as ACID consistency in databases — it doesn't; CAP's C means **linearizability** (every read sees the latest write), a stricter, different property.
+- Picking AP for data (like payments) where inconsistency causes real business or safety problems.
+- Picking CP everywhere "to be safe," creating unnecessary unavailability for data where staleness doesn't matter.
+
+## Interview questions
+
+- "You're designing a distributed cache. Would you lean CP or AP, and why?"
+- "Explain what actually happens differently between a CP and an AP system during a network partition."
+- "Give an example of a real system that's CP, and one that's AP."
+- "Is CAP still relevant when most systems run in a single cloud region with reliable networking?" (Good answer: partitions are rarer but not zero — cross-AZ links fail, and the theorem still governs behavior when they do.)
+
+## Practical examples
+
+| System | Typical choice | Why |
+|---|---|---|
+| ZooKeeper / etcd | CP | Used for leader election / config — stale data is dangerous |
+| Cassandra (default) | AP | Built for always-on, multi-region workloads |
+| DynamoDB | Tunable (AP by default, CP optional per-request) | Lets the application choose per query |
+| Traditional single-node RDBMS | CA (not partition-tolerant since it's one node) | No partitions possible without multiple nodes |
+
+## Production example
+
+Amazon's original Dynamo paper (2007) explicitly chose availability over consistency for the shopping cart service — losing a moment of consistency (e.g., briefly showing a slightly outdated cart) was considered far less costly than showing customers an error page during checkout. This directly shaped DynamoDB's AP-leaning defaults.
+
+## Best practices
+
+- Decide C vs. A **per data type**, not once for the whole system — payments might be CP while product recommendations are AP, in the same application.
+- Design explicit conflict-resolution logic if you choose AP (e.g. last-write-wins, CRDTs, or manual merge).
+- Test your system's actual behavior during simulated partitions (chaos engineering) rather than assuming your CAP classification on paper matches reality.
+
+## Summary
+
+CAP theorem says a distributed system facing a network partition must choose between consistency and availability — it can't have both at that moment. Partition tolerance is a practical requirement, not really a choice, so the real day-to-day decision is C vs. A, and that decision should be made per data type based on how costly staleness vs. unavailability actually is.
+
+## References
+
+- Brewer, E. "Towards Robust Distributed Systems" (2000)
+- Gilbert, S. & Lynch, N. "Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services" (2002)
+- DeCandia et al., "Dynamo: Amazon's Highly Available Key-value Store" (2007)
+
+<Quiz questions={[
+  {
+    q: "During normal operation with no network partition, can a system be both consistent and available?",
+    options: [
+      "No, CAP always forces a choice of exactly one",
+      "Yes — CAP only forces a trade-off during an actual network partition",
+      "Only if the system has just one node",
+      "Only NoSQL databases can do this"
+    ],
+    answer: 1,
+    explanation: "CAP's constraint only bites when a partition is actually happening. Most of the time, well-designed systems provide both C and A."
+  },
+  {
+    q: "Which is a better fit for a distributed lock / leader-election service?",
+    options: ["AP", "CP", "Neither matters", "CA"],
+    answer: 1,
+    explanation: "Leader election requires everyone to agree on a single source of truth — stale or conflicting reads (an AP trait) would break the guarantee that only one leader exists at a time."
+  }
+]} />

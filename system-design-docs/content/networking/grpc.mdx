@@ -1,0 +1,149 @@
+---
+title: "gRPC"
+description: "A high-performance RPC framework built on HTTP/2 and Protocol Buffers — why internal service-to-service calls often reach for this instead of REST."
+difficulty: "Intermediate"
+---
+
+## Definition
+
+gRPC is an open-source Remote Procedure Call (RPC) framework, built by Google, that lets a client call a method on a remote server as if it were a local function call. It runs over [HTTP/2](/docs/networking/http) and uses **Protocol Buffers (protobuf)** — a compact binary serialization format — instead of JSON, for both the wire format and the strongly typed API contract.
+
+## Why it exists
+
+REST-over-JSON is simple and universally understood, but for internal, high-volume service-to-service communication, its overhead (verbose JSON, one-request-per-connection limitations on HTTP/1.1) becomes a real cost at scale. gRPC exists to give internal systems a faster, more strongly-typed alternative, purpose-built for machine-to-machine communication rather than human-readability.
+
+## The problem it solves
+
+At high internal call volumes (a single user request fanning out to dozens of microservice calls), the overhead of JSON parsing and repeated HTTP/1.1 connection handling adds up. gRPC solves this with a compact binary format (smaller payloads, faster to parse) and HTTP/2 multiplexing (many concurrent calls over one connection, without head-of-line blocking at the HTTP layer).
+
+## Real-world analogy
+
+REST-over-JSON is like sending detailed, human-readable letters — clear to any reader, but verbose. gRPC is like an efficient, pre-agreed shorthand code between two parties who've already exchanged a codebook (the `.proto` schema) — much more compact and faster to produce and parse, but meaningless to anyone without that shared codebook, and not meant for humans to read directly.
+
+## Simple explanation
+
+You define your API's methods and message shapes once, in a `.proto` file — a schema, not code. gRPC's tooling then generates strongly-typed client and server code in whatever languages you need, so calling a remote service looks almost identical to calling a local function, with the network communication and serialization handled entirely by the generated code.
+
+## Technical explanation
+
+### A simple `.proto` definition
+
+```protobuf
+service UserService {
+  rpc GetUser (GetUserRequest) returns (User);
+}
+
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message User {
+  string user_id = 1;
+  string name = 2;
+  string email = 3;
+}
+```
+
+From this single schema, gRPC's compiler (`protoc`) generates client and server stubs in many languages (Go, Python, Java, etc.), all guaranteed to agree on the exact shape of requests and responses — eliminating an entire class of bugs from mismatched, hand-maintained API documentation.
+
+### Four call patterns
+
+gRPC, thanks to HTTP/2, supports more than simple request-response:
+
+- **Unary** — one request, one response (like typical REST).
+- **Server streaming** — one request, a stream of responses.
+- **Client streaming** — a stream of requests, one response.
+- **Bidirectional streaming** — both sides stream simultaneously.
+
+## Internal working
+
+```mermaid
+flowchart LR
+    A[".proto schema"] --> B["protoc compiler"]
+    B --> C["Generated client code"]
+    B --> D["Generated server code"]
+    C -->|"binary protobuf over HTTP/2"| D
+```
+
+Because gRPC runs over HTTP/2, many concurrent calls can be multiplexed over a single TCP connection without one slow call blocking others at the HTTP layer — a real efficiency gain over typical REST-over-HTTP/1.1 setups for high-volume internal traffic.
+
+## Advantages
+
+- Compact binary payloads (smaller and faster to parse than JSON), meaningfully reducing bandwidth and CPU cost at high call volumes.
+- Strongly typed contracts generated directly from the schema, catching mismatches at compile time rather than at runtime.
+- Native support for streaming (not just simple request/response), useful for real-time or large-data use cases.
+- HTTP/2 multiplexing avoids the connection-per-request overhead of HTTP/1.1-based REST.
+
+## Disadvantages
+
+- Binary format isn't human-readable — debugging requires tooling (e.g. specific gRPC-aware clients) rather than just reading raw traffic in a browser or with `curl`.
+- Less naturally supported directly in web browsers (requires a proxy layer, gRPC-Web, to bridge browser JavaScript to a gRPC backend).
+- Steeper initial learning curve and tooling setup than REST-over-JSON.
+
+## Trade-offs
+
+gRPC trades human-readability and the zero-tooling simplicity of REST-over-JSON for performance and strong typing — a good trade for high-volume internal service-to-service calls, and often not worth the trade for public-facing APIs consumed by many external, varied clients who benefit more from REST's universal familiarity.
+
+## Complexity considerations
+
+Adopting gRPC means adopting real tooling: `.proto` schema management, code generation as part of the build pipeline, and (for browser clients) an additional gRPC-Web proxy layer — meaningfully more setup than a REST-over-JSON API, which needs none of this.
+
+## When to use
+
+- High-volume internal service-to-service communication within a microservices architecture, especially where performance (latency, bandwidth) genuinely matters.
+- APIs needing streaming (not just simple request/response).
+- Polyglot environments where strongly-typed, auto-generated clients across many languages provide real value.
+
+## When NOT to use
+
+- Public APIs consumed by many, varied external clients (including browsers) — REST's universal familiarity and human-readability usually outweighs gRPC's performance benefits here.
+- Simple, low-volume internal APIs where the added tooling complexity of gRPC isn't justified by any real performance need.
+
+## Common mistakes
+
+- Adopting gRPC for a public-facing API primarily consumed by browsers, without accounting for the extra gRPC-Web proxy layer needed to bridge that gap.
+- Using gRPC for very low-traffic internal APIs where its tooling overhead outweighs the marginal performance benefit over simpler REST.
+- Not versioning `.proto` schemas carefully, causing compatibility issues between services updated at different times.
+
+## Interview questions
+
+- "When would you choose gRPC over REST for service-to-service communication, and why?"
+- "What are the trade-offs of gRPC's binary format compared to JSON?"
+- "How would you expose a gRPC backend to browser-based clients?"
+
+## Practical example
+
+Inside a large microservices architecture, the Orders service calls the Inventory service via gRPC dozens of times per second to check stock levels — the compact binary format and HTTP/2 multiplexing meaningfully reduce latency and resource usage at that call volume, compared to REST-over-JSON, while the public-facing API exposed to the mobile app in front of these services remains REST, since mobile clients benefit more from REST's simplicity and the mobile app doesn't need gRPC's raw performance for its much lower call volume.
+
+## Production example
+
+Google uses gRPC (an open-sourced evolution of their internal "Stubby" RPC framework) extensively for internal service-to-service communication across their infrastructure, specifically because of the performance and strong-typing benefits at their massive internal call volumes.
+
+## Best practices
+
+- Reserve gRPC for internal, high-volume service-to-service communication rather than public APIs by default.
+- Manage `.proto` schemas under version control with careful attention to backward compatibility as services evolve independently.
+- Use gRPC-Web (or a REST-facing gateway in front of gRPC backends) rather than exposing raw gRPC directly to browser clients.
+
+## Summary
+
+gRPC is a high-performance RPC framework using HTTP/2 and compact binary Protocol Buffers, generating strongly-typed client/server code from a shared schema. It's the right choice for high-volume internal service-to-service communication where performance and type safety matter, but REST-over-JSON usually remains the better fit for public-facing APIs consumed by varied external clients.
+
+## References
+
+- grpc.io official documentation
+- Protocol Buffers documentation (protobuf)
+
+<Quiz questions={[
+  {
+    q: "Why might a company use gRPC for internal service-to-service calls but REST for its public API?",
+    options: [
+      "gRPC doesn't work over the internet at all",
+      "gRPC's performance and strong typing benefit high-volume internal calls, while REST's universal familiarity and human-readability better suit varied external clients",
+      "REST is always faster than gRPC",
+      "There's no reason to use different approaches"
+    ],
+    answer: 1,
+    explanation: "The two protocols optimize for different things — gRPC for performance and type safety at high internal call volumes, REST for broad compatibility and simplicity for diverse external clients including browsers and third-party integrators."
+  }
+]} />

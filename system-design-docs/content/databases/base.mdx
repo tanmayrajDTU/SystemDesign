@@ -1,0 +1,119 @@
+---
+title: "BASE"
+description: "The AP-leaning counterpart to ACID — Basically Available, Soft state, Eventually consistent — and why many distributed systems deliberately choose it."
+difficulty: "Intermediate"
+---
+
+## Definition
+
+BASE (Basically Available, Soft state, Eventually consistent) describes a set of properties common in distributed systems that deliberately relax [ACID](/docs/databases/acid)'s strong consistency guarantees in favor of higher availability and better horizontal scalability.
+
+## Why it exists
+
+ACID's strong guarantees (especially serializable isolation and immediate consistency across replicas) become expensive and sometimes outright impossible to maintain across a globally distributed system without sacrificing availability during network partitions (see [CAP Theorem](/docs/fundamentals/cap-theorem)). BASE exists as the named, deliberate alternative philosophy: accept that data might be briefly inconsistent across replicas, in exchange for a system that's always available and easy to scale horizontally.
+
+## The problem it solves
+
+Trying to provide full ACID guarantees across a globally distributed, highly available system runs directly into CAP's constraint — during a partition, you can't have both availability and strong consistency. BASE names and embraces the AP-leaning choice explicitly, giving engineers a clear alternative model (and vocabulary) for systems where availability matters more than perfect, immediate consistency.
+
+## Real-world analogy
+
+Think of a large retail chain's inventory count. If a strict, ACID-like approach required every store's register to synchronously confirm the current, exact company-wide stock count before completing any sale, checkout lines would grind to a halt the instant any store's network connection was slow. A BASE approach instead lets each store sell based on its locally known (possibly slightly stale) stock count, and reconciles the actual totals across all stores later — checkout never stops, even if two stores briefly oversell the last unit of a popular item before the systems sync up.
+
+## Simple explanation
+
+- **Basically Available**: the system guarantees availability — a response, even if it's not the absolute latest data.
+- **Soft state**: the system's state may change over time, even without new input, as it eventually synchronizes across replicas.
+- **Eventually consistent**: given enough time without new writes, all replicas will converge to the same value.
+
+## Technical explanation
+
+Eventual consistency means there's a window during which different replicas might return different answers to the same read — this window is usually small (milliseconds to seconds) but is a real, non-zero period during which reads can be stale or divergent.
+
+```mermaid
+flowchart LR
+    A["Write hits Replica 1"] --> B["Replica 1: updated\nReplica 2, 3: not yet"]
+    B --> C["Propagation happens\n(async, in the background)"]
+    C --> D["All replicas eventually agree"]
+```
+
+BASE systems often need explicit **conflict resolution** strategies (last-write-wins, vector clocks, application-level merge logic) for cases where the same piece of data is written concurrently at two different replicas before they've synced with each other.
+
+## Internal working
+
+Many BASE-oriented systems implement **quorum-based reads and writes** as a tunable middle ground: rather than requiring *all* replicas to acknowledge a write (fully synchronous, expensive), or accepting a write on just *one* node (fully async, riskiest), the system requires a **quorum** (e.g. a majority) of replicas to acknowledge — balancing consistency and availability more finely than an all-or-nothing choice.
+
+## Advantages
+
+- Enables high availability even during network partitions or individual node failures — the system keeps responding.
+- Scales horizontally more naturally, since nodes don't need to coordinate synchronously on every write.
+
+## Disadvantages
+
+- Applications must explicitly handle the possibility of stale or temporarily conflicting reads — this pushes real complexity into the application layer that ACID would have handled for you.
+- Reasoning about correctness is genuinely harder — "the data will eventually be consistent" requires careful thought about what happens in the meantime for every specific use case.
+
+## Trade-offs
+
+BASE deliberately trades ACID's stronger, simpler-to-reason-about consistency guarantees for greater availability and easier horizontal scaling — the right trade for data where brief staleness is an acceptable cost (a social media like-count, a product view count), and the wrong trade where correctness can't tolerate even a brief window of inconsistency (an account balance).
+
+## Complexity considerations
+
+Adopting BASE means the application, not just the database, needs conflict-resolution logic for the cases where eventual consistency's "eventual" window actually matters to the user experience — this is real, ongoing engineering work that a strictly ACID system wouldn't require.
+
+## When to use
+
+- High-scale, globally distributed systems where availability is paramount and the specific data can tolerate brief staleness — social media feeds, product catalogs, view/like counters, shopping carts (Amazon's original Dynamo use case).
+
+## When NOT to use
+
+- Data where even brief inconsistency causes real harm — financial balances, inventory counts where overselling has real business cost, anything requiring strict correctness guarantees.
+
+## Common mistakes
+
+- Choosing a BASE-oriented (AP) database for data that actually needs strong consistency, without realizing the application now needs to handle conflict resolution itself.
+- Assuming "eventually consistent" means "consistent quickly" — the actual propagation delay depends on the specific system and network conditions, and can be longer than assumed under certain failure conditions.
+- Not designing explicit conflict resolution for concurrent writes to the same data, leading to silently lost updates when two replicas' conflicting writes are naively resolved (e.g. simple last-write-wins discarding a valid concurrent update).
+
+## Interview questions
+
+- "What does 'eventually consistent' actually guarantee, and what does it not guarantee?"
+- "For this use case, would you choose an ACID-strong or BASE-oriented data store, and why?"
+- "How would you handle two replicas receiving conflicting concurrent writes to the same key?"
+
+## Practical example
+
+A "like" counter on a social media post can reasonably use a BASE-oriented, eventually consistent counter — if two users like the post at nearly the same instant on two different replicas, the count briefly might not perfectly reflect both, but it converges quickly and the cost of that brief inconsistency is essentially zero, unlike, say, an account balance.
+
+## Production example
+
+Amazon's Dynamo, and its cloud successor DynamoDB, were explicitly designed around BASE principles for the shopping cart use case — prioritizing "the cart is always available to add to" over "the cart is always perfectly, immediately consistent across every replica," since a stale-but-available cart is a far better customer experience than an unavailable one.
+
+## Best practices
+
+- Choose BASE deliberately, per data type, based on how costly brief staleness actually is — not as a blanket architectural default.
+- Design explicit conflict-resolution strategies (vector clocks, CRDTs, or application-specific merge logic) for any data that can be concurrently written to multiple replicas.
+- Communicate eventual consistency's real-world implications clearly to anyone building on top of a BASE-oriented data store, since the "it'll be consistent eventually" behavior can surprise developers used to ACID guarantees.
+
+## Summary
+
+BASE (Basically Available, Soft state, Eventually consistent) is the deliberate, named alternative to ACID's strong consistency, favoring high availability and easier horizontal scaling at the cost of brief, tolerable staleness across replicas. It's the right philosophy for data that can tolerate temporary inconsistency in exchange for always-on availability, and the wrong one for data where correctness can never be compromised, even briefly.
+
+## References
+
+- Pritchett, D. "BASE: An Acid Alternative" (2008)
+- DeCandia et al., "Dynamo: Amazon's Highly Available Key-value Store" (2007)
+
+<Quiz questions={[
+  {
+    q: "Which is a better fit for a BASE (eventually consistent) approach: a bank account balance, or a social media 'like' counter?",
+    options: [
+      "The bank account balance",
+      "The 'like' counter - brief inconsistency there has essentially no real cost, unlike an account balance",
+      "Neither should ever use BASE",
+      "Both are equally good fits"
+    ],
+    answer: 1,
+    explanation: "A brief window where a like count is slightly stale across replicas has virtually no real-world cost, making it a good fit for BASE's trade-offs — unlike an account balance, where even brief incorrectness could cause real financial or trust problems."
+  }
+]} />

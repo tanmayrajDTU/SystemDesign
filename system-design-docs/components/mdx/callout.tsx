@@ -1,0 +1,42 @@
+import { AlertTriangle, Info, Lightbulb, ShieldAlert } from "lucide-react";
+import type { ReactNode } from "react";
+
+const STYLES = {
+  note: {
+    icon: Info,
+    classes: "border-signal-500/30 bg-signal-500/5 text-signal-700 dark:text-signal-400",
+  },
+  tip: {
+    icon: Lightbulb,
+    classes: "border-success/30 bg-success/5 text-emerald-700 dark:text-emerald-400",
+  },
+  warning: {
+    icon: AlertTriangle,
+    classes: "border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-400",
+  },
+  danger: {
+    icon: ShieldAlert,
+    classes: "border-danger/30 bg-danger/5 text-red-700 dark:text-red-400",
+  },
+} as const;
+
+export function Callout({
+  type = "note",
+  title,
+  children,
+}: {
+  type?: keyof typeof STYLES;
+  title?: string;
+  children: ReactNode;
+}) {
+  const { icon: Icon, classes } = STYLES[type];
+  return (
+    <div className={`not-prose my-6 flex gap-3 rounded-xl border p-4 ${classes}`}>
+      <Icon size={18} className="mt-0.5 shrink-0" />
+      <div className="text-sm leading-relaxed text-ink dark:text-ink-dark">
+        {title && <p className="mb-1 font-semibold">{title}</p>}
+        <div className="[&>p]:m-0 [&>p+p]:mt-2">{children}</div>
+      </div>
+    </div>
+  );
+}

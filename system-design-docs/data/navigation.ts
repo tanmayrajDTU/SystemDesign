@@ -1,0 +1,311 @@
+export type NavItem = {
+  title: string;
+  slug: string; // path under /docs/
+};
+
+export type NavSection = {
+  title: string;
+  slug: string; // section folder
+  items: NavItem[];
+};
+
+// The complete curriculum. Only a subset has written content right now —
+// see READY_SLUGS below. Everything else renders as "Coming soon" in the
+// sidebar so the full scope of the course is always visible, and new
+// content just needs an .mdx file dropped into /content matching the slug.
+export const NAVIGATION: NavSection[] = [
+  {
+    title: "1. Fundamentals",
+    slug: "fundamentals",
+    items: [
+      { title: "What is System Design?", slug: "fundamentals/what-is-system-design" },
+      { title: "Functional Requirements", slug: "fundamentals/functional-requirements" },
+      { title: "Non-functional Requirements", slug: "fundamentals/non-functional-requirements" },
+      { title: "Scalability", slug: "fundamentals/scalability" },
+      { title: "Availability", slug: "fundamentals/availability" },
+      { title: "Reliability", slug: "fundamentals/reliability" },
+      { title: "Latency & Throughput", slug: "fundamentals/latency-and-throughput" },
+      { title: "Fault Tolerance", slug: "fundamentals/fault-tolerance" },
+      { title: "CAP Theorem", slug: "fundamentals/cap-theorem" },
+      { title: "PACELC", slug: "fundamentals/pacelc" },
+      { title: "Horizontal vs Vertical Scaling", slug: "fundamentals/horizontal-vs-vertical-scaling" },
+      { title: "Load Distribution", slug: "fundamentals/load-distribution" },
+    ],
+  },
+  {
+    title: "2. Networking",
+    slug: "networking",
+    items: [
+      { title: "HTTP", slug: "networking/http" },
+      { title: "HTTPS", slug: "networking/https" },
+      { title: "TCP", slug: "networking/tcp" },
+      { title: "UDP", slug: "networking/udp" },
+      { title: "DNS", slug: "networking/dns" },
+      { title: "CDN", slug: "networking/cdn" },
+      { title: "Proxy", slug: "networking/proxy" },
+      { title: "Reverse Proxy", slug: "networking/reverse-proxy" },
+      { title: "API Gateway", slug: "networking/api-gateway" },
+      { title: "WebSockets", slug: "networking/websockets" },
+      { title: "gRPC", slug: "networking/grpc" },
+      { title: "REST", slug: "networking/rest" },
+      { title: "GraphQL", slug: "networking/graphql" },
+    ],
+  },
+  {
+    title: "3. Databases",
+    slug: "databases",
+    items: [
+      { title: "SQL", slug: "databases/sql" },
+      { title: "NoSQL", slug: "databases/nosql" },
+      { title: "ACID", slug: "databases/acid" },
+      { title: "BASE", slug: "databases/base" },
+      { title: "Indexing", slug: "databases/indexing" },
+      { title: "Normalization", slug: "databases/normalization" },
+      { title: "Denormalization", slug: "databases/denormalization" },
+      { title: "Partitioning", slug: "databases/partitioning" },
+      { title: "Sharding", slug: "databases/sharding" },
+      { title: "Replication", slug: "databases/replication" },
+      { title: "Read Replicas", slug: "databases/read-replicas" },
+      { title: "Leader-Follower", slug: "databases/leader-follower" },
+      { title: "Multi-leader", slug: "databases/multi-leader" },
+      { title: "Consensus Basics", slug: "databases/consensus-basics" },
+    ],
+  },
+  {
+    title: "4. Caching",
+    slug: "caching",
+    items: [
+      { title: "Why Cache?", slug: "caching/why-cache" },
+      { title: "Caching Strategies", slug: "caching/caching-strategies" },
+      { title: "Redis", slug: "caching/redis" },
+      { title: "Memcached", slug: "caching/memcached" },
+      { title: "Cache Invalidation", slug: "caching/cache-invalidation" },
+      { title: "TTL", slug: "caching/ttl" },
+      { title: "Eviction Policies", slug: "caching/eviction-policies" },
+    ],
+  },
+  {
+    title: "5. Messaging",
+    slug: "messaging",
+    items: [
+      { title: "Queues", slug: "messaging/queues" },
+      { title: "Pub/Sub", slug: "messaging/pub-sub" },
+      { title: "Kafka", slug: "messaging/kafka" },
+      { title: "RabbitMQ", slug: "messaging/rabbitmq" },
+      { title: "SQS", slug: "messaging/sqs" },
+      { title: "Event Driven Architecture", slug: "messaging/event-driven-architecture" },
+      { title: "Event Sourcing", slug: "messaging/event-sourcing" },
+      { title: "CQRS", slug: "messaging/cqrs" },
+    ],
+  },
+  {
+    title: "6. Storage",
+    slug: "storage",
+    items: [
+      { title: "Object Storage", slug: "storage/object-storage" },
+      { title: "Blob Storage", slug: "storage/blob-storage" },
+      { title: "File Storage", slug: "storage/file-storage" },
+      { title: "Block Storage", slug: "storage/block-storage" },
+      { title: "Distributed File Systems", slug: "storage/distributed-file-systems" },
+    ],
+  },
+  {
+    title: "7. Load Balancing",
+    slug: "load-balancing",
+    items: [
+      { title: "Algorithms", slug: "load-balancing/algorithms" },
+      { title: "Health Checks", slug: "load-balancing/health-checks" },
+      { title: "Sticky Sessions", slug: "load-balancing/sticky-sessions" },
+      { title: "Layer 4", slug: "load-balancing/layer-4" },
+      { title: "Layer 7", slug: "load-balancing/layer-7" },
+    ],
+  },
+  {
+    title: "8. Distributed Systems",
+    slug: "distributed-systems",
+    items: [
+      { title: "Distributed Locking", slug: "distributed-systems/distributed-locking" },
+      { title: "Leader Election", slug: "distributed-systems/leader-election" },
+      { title: "Consistent Hashing", slug: "distributed-systems/consistent-hashing" },
+      { title: "Vector Clocks", slug: "distributed-systems/vector-clocks" },
+      { title: "Lamport Clock", slug: "distributed-systems/lamport-clock" },
+      { title: "Gossip Protocol", slug: "distributed-systems/gossip-protocol" },
+      { title: "Consensus", slug: "distributed-systems/consensus" },
+      { title: "Raft", slug: "distributed-systems/raft" },
+      { title: "Paxos (high-level)", slug: "distributed-systems/paxos" },
+      { title: "Service Discovery", slug: "distributed-systems/service-discovery" },
+    ],
+  },
+  {
+    title: "9. Microservices",
+    slug: "microservices",
+    items: [
+      { title: "Monolith", slug: "microservices/monolith" },
+      { title: "Microservices", slug: "microservices/microservices" },
+      { title: "Service Mesh", slug: "microservices/service-mesh" },
+      { title: "Circuit Breaker", slug: "microservices/circuit-breaker" },
+      { title: "Retry", slug: "microservices/retry" },
+      { title: "Bulkhead", slug: "microservices/bulkhead" },
+      { title: "Saga Pattern", slug: "microservices/saga-pattern" },
+      { title: "API Composition", slug: "microservices/api-composition" },
+      { title: "Database per Service", slug: "microservices/database-per-service" },
+    ],
+  },
+  {
+    title: "10. Security",
+    slug: "security",
+    items: [
+      { title: "Authentication", slug: "security/authentication" },
+      { title: "Authorization", slug: "security/authorization" },
+      { title: "OAuth", slug: "security/oauth" },
+      { title: "JWT", slug: "security/jwt" },
+      { title: "Sessions", slug: "security/sessions" },
+      { title: "Cookies", slug: "security/cookies" },
+      { title: "CSRF", slug: "security/csrf" },
+      { title: "CORS", slug: "security/cors" },
+      { title: "Rate Limiting", slug: "security/rate-limiting" },
+      { title: "Encryption", slug: "security/encryption" },
+      { title: "Secrets Management", slug: "security/secrets-management" },
+    ],
+  },
+  {
+    title: "11. Observability",
+    slug: "observability",
+    items: [
+      { title: "Logging", slug: "observability/logging" },
+      { title: "Metrics", slug: "observability/metrics" },
+      { title: "Tracing", slug: "observability/tracing" },
+      { title: "Monitoring", slug: "observability/monitoring" },
+      { title: "Alerting", slug: "observability/alerting" },
+    ],
+  },
+  {
+    title: "12. Cloud Concepts",
+    slug: "cloud",
+    items: [
+      { title: "Containers", slug: "cloud/containers" },
+      { title: "Docker", slug: "cloud/docker" },
+      { title: "Kubernetes", slug: "cloud/kubernetes" },
+      { title: "Autoscaling", slug: "cloud/autoscaling" },
+      { title: "Serverless", slug: "cloud/serverless" },
+      { title: "Object Storage", slug: "cloud/object-storage" },
+      { title: "CDN", slug: "cloud/cdn" },
+      { title: "Edge Computing", slug: "cloud/edge-computing" },
+    ],
+  },
+  {
+    title: "13. Design Patterns",
+    slug: "patterns",
+    items: [
+      { title: "Overview", slug: "patterns/overview" },
+    ],
+  },
+  {
+    title: "14. Case Studies",
+    slug: "case-studies",
+    items: [
+      { title: "URL Shortener", slug: "case-studies/url-shortener" },
+      { title: "YouTube", slug: "case-studies/youtube" },
+      { title: "Netflix", slug: "case-studies/netflix" },
+      { title: "WhatsApp", slug: "case-studies/whatsapp" },
+      { title: "Instagram", slug: "case-studies/instagram" },
+      { title: "Facebook Feed", slug: "case-studies/facebook-feed" },
+      { title: "Twitter/X Timeline", slug: "case-studies/twitter-timeline" },
+      { title: "Uber", slug: "case-studies/uber" },
+      { title: "Google Maps", slug: "case-studies/google-maps" },
+      { title: "Google Drive", slug: "case-studies/google-drive" },
+      { title: "Dropbox", slug: "case-studies/dropbox" },
+      { title: "Spotify", slug: "case-studies/spotify" },
+      { title: "Discord", slug: "case-studies/discord" },
+      { title: "Slack", slug: "case-studies/slack" },
+      { title: "ChatGPT", slug: "case-studies/chatgpt" },
+      { title: "Search Engine", slug: "case-studies/search-engine" },
+      { title: "Distributed Cache", slug: "case-studies/distributed-cache" },
+      { title: "Notification System", slug: "case-studies/notification-system" },
+      { title: "Payment Gateway", slug: "case-studies/payment-gateway" },
+      { title: "Banking System", slug: "case-studies/banking-system" },
+      { title: "Hotel Booking", slug: "case-studies/hotel-booking" },
+      { title: "Airline Reservation", slug: "case-studies/airline-reservation" },
+      { title: "E-commerce", slug: "case-studies/e-commerce" },
+      { title: "Amazon Cart", slug: "case-studies/amazon-cart" },
+      { title: "News Feed", slug: "case-studies/news-feed" },
+      { title: "Web Crawler", slug: "case-studies/web-crawler" },
+    ],
+  },
+];
+
+// Slugs that currently have a real .mdx file in /content.
+// Everything else in NAVIGATION renders as a disabled "coming soon" row.
+export const READY_SLUGS = new Set<string>([
+  "fundamentals/what-is-system-design",
+  "fundamentals/cap-theorem",
+  "fundamentals/functional-requirements",
+  "fundamentals/non-functional-requirements",
+  "fundamentals/scalability",
+  "fundamentals/availability",
+  "fundamentals/reliability",
+  "fundamentals/latency-and-throughput",
+  "fundamentals/fault-tolerance",
+  "fundamentals/pacelc",
+  "fundamentals/horizontal-vs-vertical-scaling",
+  "fundamentals/load-distribution",
+  "networking/http",
+  "networking/tcp",
+  "networking/dns",
+  "networking/cdn",
+  "networking/reverse-proxy",
+  "networking/https",
+  "networking/rest",
+  "networking/websockets",
+  "networking/api-gateway",
+  "networking/udp",
+  "networking/proxy",
+  "networking/grpc",
+  "networking/graphql",
+  "databases/sql",
+  "databases/nosql",
+  "databases/acid",
+  "databases/indexing",
+  "databases/sharding",
+  "databases/replication",
+  "databases/base",
+  "databases/normalization",
+  "databases/denormalization",
+  "databases/partitioning",
+  "databases/leader-follower",
+  "databases/read-replicas",
+  "databases/multi-leader",
+  "databases/consensus-basics",
+  "caching/caching-strategies",
+  "caching/why-cache",
+  "caching/redis",
+  "caching/memcached",
+  "caching/cache-invalidation",
+  "caching/ttl",
+  "caching/eviction-policies",
+  "case-studies/url-shortener",
+]);
+
+export function isReady(slug: string) {
+  return READY_SLUGS.has(slug);
+}
+
+// Flat ordered list of only the ready items, used for prev/next navigation.
+export function getFlatReadyItems(): { section: string; item: NavItem }[] {
+  const flat: { section: string; item: NavItem }[] = [];
+  for (const section of NAVIGATION) {
+    for (const item of section.items) {
+      if (isReady(item.slug)) flat.push({ section: section.title, item });
+    }
+  }
+  return flat;
+}
+
+export function getPrevNext(slug: string) {
+  const flat = getFlatReadyItems();
+  const idx = flat.findIndex((f) => f.item.slug === slug);
+  return {
+    prev: idx > 0 ? flat[idx - 1].item : null,
+    next: idx >= 0 && idx < flat.length - 1 ? flat[idx + 1].item : null,
+  };
+}
