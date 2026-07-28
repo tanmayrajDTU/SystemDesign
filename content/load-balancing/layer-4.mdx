@@ -1,0 +1,125 @@
+---
+title: "Layer 4"
+description: "Load balancing at the transport layer — routing based on IP and port alone, without looking at the actual content of the traffic."
+difficulty: "Intermediate"
+---
+
+## Definition
+
+Layer 4 (L4) load balancing operates at the transport layer of the OSI model, routing traffic based purely on network-level information — source/destination IP address and port — without inspecting the actual content of the traffic (like HTTP headers or paths).
+
+## Why it exists
+
+The fastest, most efficient way to route traffic is to make a decision using only the information already present in the network packet itself, without needing to parse or understand the application-level protocol riding on top of it. L4 load balancing exists to provide exactly this: extremely fast, low-overhead routing decisions based purely on connection-level information.
+
+## The problem it solves
+
+Some load balancing needs are purely about distributing raw connections efficiently, without any need (or desire) to understand or inspect the actual application protocol involved — for these cases, parsing HTTP headers or paths (as [Layer 7](/docs/load-balancing/layer-7) load balancing does) is unnecessary overhead. L4 load balancing solves this by operating at the lowest practical layer, forwarding packets based on IP/port information alone.
+
+## Real-world analogy
+
+An L4 load balancer is like a mail sorting facility that only reads the outer envelope's address (source and destination) to decide which delivery truck a package goes on — it doesn't open the envelope to read the letter inside and decide routing based on its content. This is fast and simple, but means the facility can't make any routing decisions based on what's actually inside.
+
+## Simple explanation
+
+An L4 load balancer looks at a packet's source/destination IP address and port, and forwards it to a chosen backend server based on that information alone — it doesn't understand or care whether the traffic is HTTP, a database connection, or anything else at the application level.
+
+## Technical explanation
+
+```mermaid
+flowchart LR
+    Client -->|"TCP connection\n(IP + port only visible)"| LB["L4 Load Balancer"]
+    LB -->|forwards raw TCP stream| S1[Backend Server 1]
+```
+
+Because an L4 load balancer doesn't inspect application-level content, it typically operates by directly forwarding packets (or, in some implementations, performing Network Address Translation) rather than fully terminating and re-establishing the connection the way an L7 load balancer often does — contributing to its lower overhead and latency.
+
+## Internal working — what L4 can and can't do
+
+Since L4 load balancing only sees IP and port information, it **cannot** make routing decisions based on:
+
+- The HTTP request path (`/api/users` vs `/static/image.png`)
+- HTTP headers (like `Authorization` or `Cookie`)
+- The content of the request body
+
+It **can** efficiently:
+
+- Distribute raw TCP or UDP connections across a pool of backend servers.
+- Operate at very high throughput with minimal added latency, since there's no need to parse or buffer application-level content.
+
+## Advantages
+
+- Very low latency and overhead — minimal processing per connection, since there's no need to parse application-layer content.
+- Works for any protocol built on TCP/UDP, not just HTTP — suitable for load balancing database connections, generic TCP services, and more.
+- Can achieve extremely high throughput, well-suited to very high-volume, latency-sensitive workloads.
+
+## Disadvantages
+
+- Cannot make routing decisions based on application-level content (URL path, headers, cookies) — all such routing needs to happen at a higher layer.
+- Less flexible for common web-application routing needs, like directing `/api/*` and `/static/*` traffic to different backend pools.
+
+## Trade-offs
+
+L4 load balancing trades routing flexibility (based on application content) for raw speed and protocol-agnosticism — the right choice when routing only needs to consider connection-level information, and [Layer 7](/docs/load-balancing/layer-7) is the better fit when routing decisions need to inspect the actual application-level content.
+
+## Complexity considerations
+
+L4 load balancing is comparatively simple to configure and reason about, since it doesn't need to understand any specific application protocol's structure — a meaningful operational advantage when application-level routing intelligence genuinely isn't needed.
+
+## When to use
+
+- Load balancing non-HTTP TCP/UDP traffic (database connections, generic TCP services).
+- Extremely high-throughput, latency-sensitive workloads where the overhead of application-level inspection isn't justified by any actual routing need.
+- As a first layer in front of a more content-aware L7 load balancer, in some layered architectures.
+
+## When NOT to use (prefer Layer 7 instead)
+
+- Web applications needing routing decisions based on URL path, HTTP headers, or cookies — see [Layer 7](/docs/load-balancing/layer-7).
+
+## Common mistakes
+
+- Trying to implement path-based or header-based routing at L4, which isn't possible since that information simply isn't visible at this layer — this requires an L7 load balancer instead.
+- Assuming L4 load balancing is always "better" because it's faster, without considering whether the specific use case actually needs application-level routing intelligence that only L7 can provide.
+
+## Interview questions
+
+- "What information is an L4 load balancer able to use for routing decisions, and what can't it see?"
+- "Why might L4 load balancing be preferred for a non-HTTP database connection pool?"
+- "What's the fundamental trade-off between L4 and L7 load balancing?"
+
+## Practical example
+
+A database connection pooler load balances incoming TCP connections across several read replica database instances using L4 load balancing — there's no HTTP or application-level content to inspect, just raw TCP connections that need efficient, low-overhead distribution across the replica pool.
+
+## Production example
+
+Many cloud providers' "network load balancer" offerings (e.g. AWS Network Load Balancer) specifically operate at Layer 4, chosen deliberately for extremely high throughput and low latency use cases where application-level routing intelligence isn't needed, compared to their "application load balancer" offerings operating at Layer 7.
+
+## Best practices
+
+- Choose L4 load balancing specifically when routing decisions genuinely don't need application-level content — for pure connection distribution at maximum throughput and minimum latency.
+- Use L7 load balancing instead whenever routing needs to consider HTTP-specific information (paths, headers, cookies).
+- Consider a layered approach (L4 in front of L7) for very high-scale systems needing both raw throughput and content-aware routing at different stages.
+
+## Summary
+
+Layer 4 load balancing routes traffic based purely on transport-layer information (IP address and port), without inspecting application-level content — trading routing flexibility for very low latency, high throughput, and protocol-agnosticism. It's the right choice for non-HTTP traffic and extremely performance-sensitive workloads where application-aware routing isn't needed, while [Layer 7](/docs/load-balancing/layer-7) load balancing is needed whenever routing decisions must consider the actual application content.
+
+## References
+
+- AWS documentation: Network Load Balancer
+- Nginx documentation: TCP/UDP load balancing
+
+<Quiz questions={[
+  {
+    q: "Why can't a Layer 4 load balancer route traffic differently based on the HTTP URL path (e.g. /api/* vs /static/*)?",
+    options: [
+      "Layer 4 load balancers don't support HTTP traffic at all",
+      "Layer 4 operates using only transport-layer information (IP and port) and doesn't inspect application-level content like HTTP paths",
+      "URL paths are encrypted and can never be read by any load balancer",
+      "This is actually possible at Layer 4"
+    ],
+    answer: 1,
+    explanation: "Layer 4 load balancing makes routing decisions based purely on IP address and port information from the transport layer — it never inspects the application-layer content (like an HTTP path), which is exactly what distinguishes it from Layer 7 load balancing."
+  }
+]} />
