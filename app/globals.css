@@ -65,9 +65,242 @@ input:focus-visible,
   transform-origin: left;
 }
 
-/* Mermaid container */
+/* Mermaid container and SVG styling */
 .mermaid-wrap {
-  @apply flex justify-center overflow-x-auto rounded-xl border border-border dark:border-border-dark bg-surface-raised dark:bg-surface-raised-dark p-4 my-6;
+  @apply flex justify-center overflow-x-auto rounded-2xl border border-border dark:border-border-dark bg-surface/30 dark:bg-surface-dark/30 backdrop-blur-md p-6 my-8 shadow-sm transition-all duration-300;
+}
+
+.mermaid-wrap:hover {
+  @apply border-signal-500/20 shadow-md;
+}
+
+.mermaid-wrap svg {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+/* Nodes styling - light theme */
+.mermaid-wrap .node rect,
+.mermaid-wrap .node circle,
+.mermaid-wrap .node polygon,
+.mermaid-wrap .node path,
+.mermaid-wrap .node .label-container {
+  fill: #FFFFFF !important;
+  stroke: #E5E7EB !important;
+  stroke-width: 1.5px !important;
+  rx: 8px !important;
+  ry: 8px !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.02)) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Nodes styling - dark theme */
+.dark .mermaid-wrap .node rect,
+.dark .mermaid-wrap .node circle,
+.dark .mermaid-wrap .node polygon,
+.dark .mermaid-wrap .node path,
+.dark .mermaid-wrap .node .label-container {
+  fill: #161C26 !important;
+  stroke: #1E2530 !important;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3)) !important;
+}
+
+/* Node Text */
+.mermaid-wrap .node .label,
+.mermaid-wrap .node text {
+  font-family: var(--font-body), sans-serif !important;
+  font-weight: 500 !important;
+  fill: #1A1D23 !important;
+}
+
+.dark .mermaid-wrap .node .label,
+.dark .mermaid-wrap .node text {
+  fill: #E4E7EC !important;
+}
+
+/* Hover effects for nodes */
+.mermaid-wrap .node:hover rect,
+.mermaid-wrap .node:hover circle,
+.mermaid-wrap .node:hover polygon,
+.mermaid-wrap .node:hover path,
+.mermaid-wrap .node:hover .label-container {
+  fill: #EEF4FF !important;
+  stroke: #4C8DFF !important;
+  stroke-width: 2px !important;
+  transform: translateY(-2px);
+  filter: drop-shadow(0 6px 12px rgba(76, 141, 255, 0.15)) !important;
+  cursor: pointer;
+}
+
+.dark .mermaid-wrap .node:hover rect,
+.dark .mermaid-wrap .node:hover circle,
+.dark .mermaid-wrap .node:hover polygon,
+.dark .mermaid-wrap .node:hover path,
+.dark .mermaid-wrap .node:hover .label-container {
+  fill: #1c2638 !important;
+  stroke: #4C8DFF !important;
+  filter: drop-shadow(0 6px 12px rgba(76, 141, 255, 0.35)) !important;
+}
+
+/* Edge paths (connecting lines) styling */
+.mermaid-wrap .edgePath .path {
+  stroke: #BBD3FF !important;
+  stroke-width: 2px !important;
+  stroke-linecap: round !important;
+  stroke-dasharray: 4, 4;
+  animation: flow 45s linear infinite;
+  transition: stroke-width 0.2s, stroke 0.2s;
+}
+
+.dark .mermaid-wrap .edgePath .path {
+  stroke: #334155 !important;
+}
+
+/* Flowing data lines animation */
+@keyframes flow {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+
+/* Edge hover styling */
+.mermaid-wrap .edgePath:hover .path {
+  stroke: #4C8DFF !important;
+  stroke-dasharray: none;
+  stroke-width: 3px !important;
+}
+
+/* Markers (Arrowheads) */
+.mermaid-wrap marker {
+  fill: #4C8DFF !important;
+}
+
+.mermaid-wrap .edgePath .path-marker {
+  fill: #4C8DFF !important;
+}
+
+/* Edge labels */
+.mermaid-wrap .edgeLabel rect {
+  fill: #FAFAF9 !important;
+  rx: 4px !important;
+  ry: 4px !important;
+}
+
+.dark .mermaid-wrap .edgeLabel rect {
+  fill: #0A0E14 !important;
+}
+
+.mermaid-wrap .edgeLabel span {
+  font-family: var(--font-mono), monospace !important;
+  font-size: 11px !important;
+  color: #6B7280 !important;
+  font-weight: 500 !important;
+}
+
+.dark .mermaid-wrap .edgeLabel span {
+  color: #8B93A1 !important;
+}
+
+/* Subgraphs (Groups / Clusters) */
+.mermaid-wrap .cluster rect {
+  fill: rgba(243, 244, 246, 0.3) !important;
+  stroke: #E5E7EB !important;
+  stroke-width: 1.5px !important;
+  stroke-dasharray: 6, 6;
+  rx: 12px !important;
+  ry: 12px !important;
+}
+
+.dark .mermaid-wrap .cluster rect {
+  fill: rgba(22, 28, 38, 0.3) !important;
+  stroke: #1E2530 !important;
+}
+
+.mermaid-wrap .cluster .label {
+  font-family: var(--font-display), sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  fill: #6B7280 !important;
+}
+
+.dark .mermaid-wrap .cluster .label {
+  fill: #8B93A1 !important;
+}
+
+/* Sequence diagram updates */
+.mermaid-wrap .actor {
+  fill: #FFFFFF !important;
+  stroke: #E5E7EB !important;
+  stroke-width: 1.5px !important;
+  rx: 8px !important;
+  ry: 8px !important;
+}
+
+.dark .mermaid-wrap .actor {
+  fill: #161C26 !important;
+  stroke: #1E2530 !important;
+}
+
+.mermaid-wrap text.actor {
+  font-family: var(--font-display), sans-serif !important;
+  font-weight: 600 !important;
+  fill: #1A1D23 !important;
+}
+
+.dark .mermaid-wrap text.actor {
+  fill: #E4E7EC !important;
+}
+
+.mermaid-wrap .actor-line {
+  stroke: #E5E7EB !important;
+  stroke-width: 1.5px !important;
+  stroke-dasharray: 4, 4;
+}
+
+.dark .mermaid-wrap .actor-line {
+  stroke: #1E2530 !important;
+}
+
+/* Message lines in sequence diagrams */
+.mermaid-wrap .messageLine0,
+.mermaid-wrap .messageLine1 {
+  stroke: #4C8DFF !important;
+  stroke-width: 2px !important;
+}
+
+.mermaid-wrap .messageText {
+  font-family: var(--font-mono), monospace !important;
+  fill: #6B7280 !important;
+  font-size: 12px !important;
+}
+
+.dark .mermaid-wrap .messageText {
+  fill: #8B93A1 !important;
+}
+
+/* Notes in sequence diagrams */
+.mermaid-wrap .note {
+  fill: #FEF3C7 !important;
+  stroke: #F59E0B !important;
+  rx: 6px !important;
+  ry: 6px !important;
+}
+
+.dark .mermaid-wrap .note {
+  fill: rgba(245, 158, 11, 0.15) !important;
+  stroke: #F59E0B !important;
+}
+
+.mermaid-wrap .noteText {
+  font-family: var(--font-body), sans-serif !important;
+  fill: #78350F !important;
+  font-size: 11px !important;
+}
+
+.dark .mermaid-wrap .noteText {
+  fill: #FDE68A !important;
 }
 
 /* shiki code block line highlighting */
