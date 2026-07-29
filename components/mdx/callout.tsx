@@ -14,6 +14,10 @@ const STYLES = {
     icon: AlertTriangle,
     classes: "border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-400",
   },
+  info: {
+    icon: Info,
+    classes: "border-signal-500/30 bg-signal-500/5 text-signal-700 dark:text-signal-400",
+  },
   danger: {
     icon: ShieldAlert,
     classes: "border-danger/30 bg-danger/5 text-red-700 dark:text-red-400",
@@ -25,11 +29,12 @@ export function Callout({
   title,
   children,
 }: {
-  type?: keyof typeof STYLES;
+  type?: string;
   title?: string;
   children: ReactNode;
 }) {
-  const { icon: Icon, classes } = STYLES[type];
+  const style = STYLES[type as keyof typeof STYLES] || STYLES.note;
+  const { icon: Icon, classes } = style;
   return (
     <div className={`not-prose my-6 flex gap-3 rounded-xl border p-4 ${classes}`}>
       <Icon size={18} className="mt-0.5 shrink-0" />

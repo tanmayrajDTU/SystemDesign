@@ -38,6 +38,7 @@ export default async function DocPage({ params }: { params: { slug: string[] } }
     source: transformMermaidFences(doc.content),
     components: mdxComponents,
     options: {
+      blockJS: false,
       mdxOptions: {
         remarkPlugins: [remarkGfm],
         rehypePlugins: [
