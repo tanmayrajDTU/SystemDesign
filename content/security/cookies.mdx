@@ -1,0 +1,129 @@
+---
+title: "Cookies"
+description: "Small pieces of data a server asks the browser to store and automatically resend — the transport mechanism underlying sessions, and a source of several classic vulnerabilities."
+difficulty: "Beginner"
+---
+
+## Definition
+
+A cookie is a small piece of data that a server asks a browser to store, which the browser then automatically includes in subsequent requests to that same server — the standard mechanism for carrying a [session](/docs/security/sessions) ID (or other small pieces of state) across an otherwise stateless [HTTP](/docs/networking/http) connection.
+
+## Why it exists
+
+HTTP itself has no built-in memory between requests, but browsers need some standard, automatic way to send back a small piece of information a server previously asked them to remember — like a session ID. Cookies exist to provide exactly this: a simple, standardized mechanism for a server to say "remember this" and have the browser automatically include it on every future request to that server, without requiring custom client-side code.
+
+## The problem it solves
+
+Without cookies, a server would have no standard way to have the browser automatically resend a piece of state on every subsequent request — every application would need its own custom, non-standard convention. Cookies solve this with a browser-native, universally supported mechanism: the server sets a cookie once, and the browser handles remembering and resending it automatically thereafter.
+
+## Real-world analogy
+
+A coat-check ticket stub is like a cookie — you receive it once, and you're expected to bring it back (automatically, without needing to be reminded) every time you want to interact with that same coat check again, so they know which coat to hand you.
+
+## Simple explanation
+
+A server includes a `Set-Cookie` header in its response; the browser stores that cookie and automatically includes it (via a `Cookie` header) on every subsequent request to that same domain, until the cookie expires or is deleted.
+
+## Technical explanation
+
+### Key cookie attributes
+
+```
+Set-Cookie: sessionId=a1b2c3; HttpOnly; Secure; SameSite=Strict; Max-Age=3600
+```
+
+- **HttpOnly**: prevents the cookie from being accessed via JavaScript, mitigating the impact of a cross-site scripting (XSS) attack trying to steal it.
+- **Secure**: the cookie is only sent over HTTPS, never plain HTTP, preventing it from being exposed to network eavesdroppers.
+- **SameSite**: controls whether the cookie is sent on cross-site requests, a key defense against [CSRF](/docs/security/csrf) attacks — `Strict` never sends it cross-site, `Lax` sends it for some safe cross-site navigation, `None` always sends it (requiring `Secure` as well).
+- **Max-Age / Expires**: how long the cookie persists before the browser discards it.
+
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant Server
+    Browser->>Server: GET /login
+    Server-->>Browser: Set-Cookie: sessionId=abc; HttpOnly; Secure
+    Note over Browser: Cookie stored
+    Browser->>Server: GET /profile\nCookie: sessionId=abc
+    Server-->>Browser: profile data
+```
+
+## Internal working — why cookies are automatically sent
+
+Unlike other client-side storage (like `localStorage`), cookies are specifically designed to be automatically attached by the browser to every matching request — this automatic behavior is exactly what makes them useful for session management (no application code needs to manually re-attach them), but it's also precisely what makes cookies vulnerable to CSRF attacks, since a malicious site can trigger a request to your bank's server, and the browser will automatically attach your valid session cookie to it, unless `SameSite` or another defense prevents this.
+
+## Advantages
+
+- Automatically included on matching requests by the browser, requiring no manual application code to resend them.
+- Well-supported security attributes (`HttpOnly`, `Secure`, `SameSite`) provide meaningful, standard protections against common attack classes when properly configured.
+
+## Disadvantages
+
+- Their automatic-attachment behavior, while convenient, is exactly the mechanism that enables CSRF attacks if not properly mitigated.
+- A cookie without `HttpOnly` set can be read (and potentially exfiltrated) by malicious JavaScript in an XSS attack.
+- A cookie without `Secure` set can be transmitted over plain HTTP, exposing it to network eavesdropping.
+
+## Trade-offs
+
+Cookies' automatic-attachment convenience is inseparable from their CSRF risk — the mitigation (`SameSite`, and often an additional CSRF token) is necessary specifically because of the same behavior that makes cookies useful for session management in the first place.
+
+## Complexity considerations
+
+Setting a basic cookie is trivial. Configuring its security attributes correctly (`HttpOnly`, `Secure`, `SameSite`) for a specific application's actual cross-site needs requires understanding the real trade-offs each attribute makes, not just copying a default configuration blindly.
+
+## When to use
+
+- Carrying session identifiers or other small pieces of state that need to be automatically included on requests to a specific domain, particularly for traditional server-rendered or hybrid web applications.
+
+## When to consider alternatives
+
+- Modern single-page applications sometimes use other token-storage mechanisms (like an `Authorization` header carrying a JWT) instead of cookies, specifically to avoid CSRF's automatic-attachment risk entirely, accepting the trade-off of needing to manually attach the token in application code instead.
+
+## Common mistakes
+
+- Not setting `HttpOnly` on session cookies, leaving them vulnerable to theft via XSS.
+- Not setting `Secure`, allowing a cookie to be transmitted over plain HTTP and exposed to network eavesdropping.
+- Misconfiguring or omitting `SameSite`, leaving the application vulnerable to CSRF attacks that rely on the browser automatically attaching cookies to cross-site requests.
+
+## Interview questions
+
+- "What does the `HttpOnly` cookie attribute protect against, specifically?"
+- "How does the `SameSite` cookie attribute help defend against CSRF attacks?"
+- "Why is a cookie's automatic-attachment behavior both its main usefulness and its main security risk?"
+
+## Practical example
+
+A web application sets its session cookie with `HttpOnly`, `Secure`, and `SameSite=Strict` — protecting it from theft via JavaScript-based XSS attacks, ensuring it's never transmitted over an insecure connection, and preventing it from being automatically attached to requests originating from other, potentially malicious sites.
+
+## Production example
+
+Nearly all major web frameworks (Django, Rails, Express) set these security-relevant cookie attributes by default (or with simple configuration options) for their built-in session management, reflecting how well-established these protections have become as baseline, expected practice.
+
+## Best practices
+
+- Always set `HttpOnly` and `Secure` on any cookie carrying sensitive data like a session ID.
+- Set `SameSite` deliberately based on your application's actual cross-site request needs, defaulting to `Strict` or `Lax` unless you have a specific reason for `None`.
+- Combine `SameSite` with an additional CSRF token for defense in depth on sensitive, state-changing actions, rather than relying on `SameSite` alone.
+
+## Summary
+
+Cookies are small pieces of data a server asks the browser to store and automatically resend on subsequent matching requests — the standard mechanism carrying session IDs across HTTP's stateless connections. Their automatic-attachment behavior is both their core usefulness and the source of CSRF risk, mitigated through security attributes like `HttpOnly`, `Secure`, and `SameSite` that should be configured deliberately, not left at insecure defaults.
+
+## References
+
+- MDN Web Docs: Using HTTP Cookies
+- OWASP Session Management Cheat Sheet
+
+<Quiz questions={[
+  {
+    q: "What does the `SameSite` cookie attribute primarily help defend against?",
+    options: [
+      "SQL injection attacks",
+      "CSRF attacks, by controlling whether the cookie is automatically attached to requests originating from other sites",
+      "Denial of service attacks",
+      "It has no security purpose"
+    ],
+    answer: 1,
+    explanation: "SameSite restricts whether a cookie is sent along with cross-site requests, directly addressing the mechanism CSRF attacks rely on: a malicious site triggering a request to another site, hoping the browser automatically attaches the victim's valid session cookie to it."
+  }
+]} />

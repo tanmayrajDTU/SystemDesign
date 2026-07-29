@@ -1,0 +1,114 @@
+---
+title: "Ambassador"
+description: "A specialized sidecar that represents an application to the outside world, handling outbound connection concerns like retries and monitoring."
+difficulty: "Intermediate"
+---
+
+## Definition
+
+The Ambassador pattern is a specialized variant of the [Sidecar](/docs/patterns/sidecar) pattern where the helper process specifically handles **outbound** network communication on behalf of the main application — proxying its outgoing requests to other services, and handling concerns like retries, circuit breaking, and monitoring for those outbound calls.
+
+## Why it exists
+
+An application making calls to other services often needs retry logic, circuit breaking, connection pooling, and monitoring around each of those outbound calls — building this consistently into every application, in every language, is the same duplication problem the broader Sidecar pattern addresses. The Ambassador pattern exists as a specific, focused application of that idea: a dedicated proxy process representing the application's outbound communication, so the application itself can make simple, local calls and let the ambassador handle the actual network complexity.
+
+## The problem it solves
+
+An application wanting robust outbound calling behavior (retries, circuit breakers, timeouts, connection pooling) either needs to implement this directly (often inconsistently across languages) or rely on a library that still needs to be correctly configured and kept updated in every service. The Ambassador pattern solves this by moving that responsibility entirely into a separate process the application talks to locally — the application code makes a simple call to "localhost," and the ambassador transparently handles all the real complexity of reaching the actual destination service reliably.
+
+## Real-world analogy
+
+A country's foreign ambassador represents that country's interests when dealing with another nation, handling the complexities of diplomatic protocol, negotiation, and communication on the country's behalf — the country's leadership doesn't need to personally navigate every diplomatic nuance directly; they communicate their intent to the ambassador, who handles the actual, complex external interaction. The Ambassador pattern applies this same idea to a service's outbound network calls.
+
+## Simple explanation
+
+Rather than an application directly calling `payment-service.internal:443` with its own retry and circuit-breaking logic, it instead calls `localhost:9000` (the ambassador), which transparently handles retries, circuit breaking, connection pooling, and monitoring, then forwards the actual request to the real destination.
+
+## Technical explanation
+
+```mermaid
+flowchart LR
+    App["Main Application"] -->|"simple call to localhost"| Ambassador["Ambassador Proxy"]
+    Ambassador -->|"retries, circuit breaking,\nconnection pooling"| Downstream["Downstream Service"]
+```
+
+The application's code is simplified dramatically — it makes what looks like a simple, local call, entirely unaware of the retry logic, circuit breaker state, or connection pooling happening in the ambassador process on its behalf.
+
+## Internal working — ambassador vs. general sidecar
+
+While every ambassador is technically a kind of sidecar, the term "ambassador" specifically emphasizes the **outbound-communication** use case — handling the application's calls *out* to other services — as distinct from a more general sidecar that might also handle inbound traffic, TLS termination for incoming requests, or other cross-cutting concerns beyond outbound calling specifically.
+
+## Advantages
+
+- Simplifies application code significantly — retry, circuit breaking, and connection pooling logic doesn't need to be implemented or maintained within the application itself.
+- Consistent outbound calling behavior across services, regardless of the language each is implemented in.
+- Ambassador configuration (retry policies, circuit breaker thresholds) can often be updated centrally without redeploying the application.
+
+## Disadvantages
+
+- Adds a small amount of latency to every outbound call, since it now passes through the local ambassador process rather than going directly.
+- Adds operational overhead in deploying, monitoring, and updating ambassador processes across a fleet of services.
+
+## Trade-offs
+
+The Ambassador pattern trades a small amount of added latency and operational complexity for consistently implemented, centrally-manageable outbound calling behavior — a good trade in polyglot, meaningfully-sized microservices architectures, and likely unnecessary for a small number of services already using a well-maintained shared client library effectively.
+
+## Complexity considerations
+
+Deploying a single ambassador for one or two services is straightforward. Consistently managing ambassador configuration and versions across a large fleet requires the same kind of operational discipline needed for a full sidecar/service mesh deployment more broadly.
+
+## When to use
+
+- Polyglot microservices architectures where consistent, robust outbound calling behavior (retries, circuit breaking) needs to be implemented without duplicating logic across many languages.
+
+## When NOT to use
+
+- Small, single-language systems where a well-maintained shared client library already provides this behavior effectively without the added latency and operational overhead of a separate proxy process.
+
+## Common mistakes
+
+- Building custom retry/circuit-breaking logic directly into application code across multiple languages, duplicating effort and risking inconsistent behavior, when an ambassador could have centralized this logic instead.
+- Not accounting for the ambassador's own latency and resource overhead in capacity planning.
+
+## Interview questions
+
+- "How does the Ambassador pattern simplify an application's outbound calling logic?"
+- "What's the specific difference between an ambassador and a more general sidecar?"
+- "When would you choose an ambassador over a shared client library for handling retries and circuit breaking?"
+
+## Practical example
+
+A payment-processing service written in Python calls out to several downstream fraud-detection and banking partner APIs; rather than implementing retry logic and circuit breakers directly in Python for each downstream call, it routes all outbound calls through a local ambassador proxy that handles this uniformly — the same ambassador configuration and behavior would apply identically even if the service were rewritten in a different language.
+
+## Production example
+
+Many service mesh implementations (like Istio, built on Envoy sidecars) effectively provide ambassador-like functionality for outbound traffic as part of their broader sidecar deployment, applying consistent retry, timeout, and circuit-breaking policies to outbound calls across an entire microservices fleet, centrally configured rather than implemented per-service.
+
+## Best practices
+
+- Use the Ambassador pattern specifically for outbound-calling concerns (retries, circuit breaking, connection pooling) in polyglot or large-scale microservices environments.
+- Centralize ambassador configuration so retry and circuit-breaking policies can be updated fleet-wide without individual service redeployments.
+- Account for the ambassador's added latency and resource footprint in capacity planning.
+
+## Summary
+
+The Ambassador pattern is a specialized sidecar specifically handling an application's outbound network communication — retries, circuit breaking, connection pooling — transparently, so the application itself can make simple, local calls without implementing this logic directly. It's a focused, outbound-specific application of the broader Sidecar pattern, valuable in polyglot or large-scale microservices architectures needing consistent outbound calling behavior.
+
+## References
+
+- microservices.io: Ambassador pattern
+- Fowler, M. and Lewis, J. writings on sidecar-adjacent microservices patterns
+
+<Quiz questions={[
+  {
+    q: "What specific responsibility does the Ambassador pattern focus on, compared to a more general sidecar?",
+    options: [
+      "Handling database backups",
+      "Specifically handling an application's outbound network communication - retries, circuit breaking, connection pooling for calls the application makes to other services",
+      "Rendering the application's user interface",
+      "Compiling the application's source code"
+    ],
+    answer: 1,
+    explanation: "While technically a kind of sidecar, an ambassador specifically emphasizes representing the application's outbound calls to other services, handling retry logic, circuit breaking, and connection pooling on its behalf, as distinct from broader sidecar responsibilities that might include inbound traffic handling as well."
+  }
+]} />

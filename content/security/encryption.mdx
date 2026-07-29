@@ -1,0 +1,135 @@
+---
+title: "Encryption"
+description: "Making data unreadable without the right key — the difference between symmetric and asymmetric encryption, and where each is actually used."
+difficulty: "Intermediate"
+---
+
+## Definition
+
+Encryption transforms readable data (plaintext) into an unreadable form (ciphertext) using a cryptographic algorithm and a key, such that only someone possessing the correct key can reverse the process (decrypt) and recover the original data.
+
+## Why it exists
+
+Data — whether stored on disk or transmitted over a network — is frequently exposed to parties who shouldn't be able to read it: a stolen laptop, an intercepted network connection, a compromised database backup. Encryption exists to protect the confidentiality of that data even if it falls into the wrong hands, by making it mathematically infeasible to read without the correct key.
+
+## The problem it solves
+
+Storing or transmitting sensitive data in plain, readable form means anyone who gains access to it — through theft, interception, or a breach — can read it directly. Encryption solves this by ensuring that even if the data itself is exposed, it remains unreadable and effectively useless without the corresponding decryption key.
+
+## Real-world analogy
+
+A locked safe protects its contents even if someone steals the entire safe — they'd need the combination (the key) to actually access what's inside, not just physical possession of the safe itself. Encryption applies this same principle to data: possessing the encrypted data alone isn't enough to read it.
+
+## Simple explanation
+
+Encryption comes in two main forms: **symmetric** (the same key both encrypts and decrypts — fast, but the key must be securely shared between parties in advance) and **asymmetric** (a public key encrypts, and only the corresponding private key can decrypt — solves the key-sharing problem, at the cost of being computationally slower).
+
+## Technical explanation
+
+### Symmetric encryption
+
+```mermaid
+flowchart LR
+    A["Plaintext"] -->|"Encrypt with Key K"| B["Ciphertext"]
+    B -->|"Decrypt with same Key K"| C["Plaintext (recovered)"]
+```
+
+Fast and efficient (algorithms like AES are widely used), but requires both parties to already securely possess the same secret key — a real challenge if they haven't previously exchanged one over a secure channel.
+
+### Asymmetric encryption
+
+```mermaid
+flowchart LR
+    A["Plaintext"] -->|"Encrypt with\nrecipient's PUBLIC key"| B["Ciphertext"]
+    B -->|"Decrypt with\nrecipient's PRIVATE key"| C["Plaintext (recovered)"]
+```
+
+Anyone can encrypt using the recipient's freely published public key, but only the recipient (holding the corresponding private key) can decrypt — solving the key-distribution problem, at the cost of being significantly slower computationally than symmetric encryption.
+
+### The common hybrid approach
+
+As covered in [HTTPS](/docs/networking/https), TLS uses asymmetric encryption only briefly, during the handshake, to safely establish a shared symmetric key — then switches to fast symmetric encryption for the actual bulk data transfer, combining asymmetric encryption's key-distribution benefit with symmetric encryption's speed.
+
+## Internal working — encryption at rest vs. in transit
+
+- **Encryption in transit** protects data as it moves across a network (e.g. HTTPS/TLS), preventing eavesdroppers on the network path from reading it.
+- **Encryption at rest** protects stored data (on disk, in a database, in backups), preventing someone who gains access to the physical storage or a stolen backup from reading it directly.
+
+Both are typically needed for comprehensive protection — encrypting data in transit doesn't protect it once it's sitting on disk, and encrypting it at rest doesn't protect it while it's being transmitted.
+
+## Advantages
+
+- Protects data confidentiality even if it's stolen, intercepted, or otherwise exposed to unauthorized parties.
+- Asymmetric encryption solves the fundamental key-distribution problem, enabling secure communication between parties who've never previously exchanged a secret.
+- Modern encryption algorithms (AES, RSA/elliptic curve) are extremely well-studied and, when used correctly, provide very strong practical security.
+
+## Disadvantages
+
+- Asymmetric encryption is computationally expensive compared to symmetric encryption, which is why it's typically used only for key exchange, not bulk data.
+- Encryption is only as strong as its key management — a leaked or poorly protected key undermines the encryption entirely, regardless of the algorithm's theoretical strength (see [Secrets Management](/docs/security/secrets-management)).
+- Encrypted data at rest still needs the decryption key accessible to the application at some point, which itself needs careful protection.
+
+## Trade-offs
+
+Symmetric encryption is fast but requires secure key sharing in advance; asymmetric encryption solves key distribution but is computationally expensive — most real systems (like TLS) use both together, exactly because their respective strengths and weaknesses complement each other.
+
+## Complexity considerations
+
+Using well-established, mature encryption libraries and protocols (rather than implementing cryptographic algorithms from scratch) is essential — cryptography has many subtle pitfalls, and even minor implementation mistakes can completely undermine otherwise theoretically sound algorithms.
+
+## When to use
+
+- Essentially always, for any sensitive data — both in transit (TLS/HTTPS for network communication) and at rest (encrypting databases, backups, and stored files containing sensitive information).
+
+## When to be especially careful
+
+- Any scenario handling regulated or highly sensitive data (financial records, health information, personal data) where encryption is often a legal or compliance requirement, not just a best practice.
+
+## Common mistakes
+
+- Implementing custom cryptographic algorithms rather than using well-established, audited libraries and standards.
+- Encrypting data in transit but neglecting encryption at rest (or vice versa), leaving a real gap in overall data protection.
+- Poor key management — storing encryption keys insecurely (e.g. hardcoded in source code) undermines even strong encryption entirely.
+
+## Interview questions
+
+- "What's the difference between symmetric and asymmetric encryption, and why does TLS use both together?"
+- "What's the difference between encryption at rest and encryption in transit, and why do you typically need both?"
+- "Why is key management often the weakest link in an otherwise strong encryption scheme?"
+
+## Practical example
+
+A healthcare application encrypts patient records at rest in its database (protecting against a stolen backup or compromised disk), and uses HTTPS/TLS for all network communication (protecting against network eavesdropping) — comprehensive protection requiring both forms of encryption, since each addresses a different exposure risk.
+
+## Production example
+
+AES (Advanced Encryption Standard) is the dominant symmetric encryption algorithm used across the industry, including within TLS itself for the bulk data transfer phase, chosen specifically for its combination of strong, well-studied security and high computational efficiency.
+
+## Best practices
+
+- Use well-established, audited encryption libraries and protocols rather than implementing cryptography from scratch.
+- Encrypt both in transit (TLS) and at rest (database/disk encryption) for comprehensive protection of sensitive data.
+- Invest as much attention in key management (see [Secrets Management](/docs/security/secrets-management)) as in the encryption algorithm itself, since a compromised key undermines even the strongest encryption.
+
+## Summary
+
+Encryption transforms readable data into unreadable ciphertext, protecting its confidentiality even if exposed to unauthorized parties. Symmetric encryption (same key for both directions) is fast but requires secure key sharing in advance; asymmetric encryption (public/private key pairs) solves key distribution at the cost of speed — most real systems, like TLS, combine both, using asymmetric encryption briefly to establish a shared symmetric key for the actual, fast bulk data transfer.
+
+## References
+
+- NIST FIPS 197 (AES specification)
+- RFC 8446 (TLS 1.3)
+
+<Quiz questions={[
+  {
+    q: "Why does TLS use asymmetric encryption only during the initial handshake, switching to symmetric encryption for the actual data transfer?",
+    options: [
+      "Asymmetric encryption cannot be used for any real purpose",
+      "Asymmetric encryption solves the key-distribution problem but is computationally expensive; symmetric encryption is much faster, so TLS uses asymmetric encryption briefly to safely establish a shared symmetric key, then switches to fast symmetric encryption for the bulk data",
+      "Symmetric encryption is never actually used in TLS",
+      "This is purely a historical accident with no real technical reason"
+    ],
+    answer: 1,
+    explanation: "Asymmetric encryption is valuable for safely exchanging a key without a prior shared secret, but it's computationally expensive; symmetric encryption is much faster, so TLS combines both approaches — using asymmetric encryption briefly during the handshake, then symmetric encryption for the actual, high-volume data transfer."
+  }
+]} />
