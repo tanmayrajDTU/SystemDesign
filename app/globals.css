@@ -325,3 +325,54 @@ input:focus-visible,
 [data-rehype-pretty-code-fragment] [data-highlighted-line] {
   @apply border-signal-500 bg-signal-500/10;
 }
+
+/* ---------------------------------------------------------------------
+ * Print / PDF export (Interview Revision Hub)
+ *
+ * Elements tagged `.no-print` (nav, sidebars, filter/search chrome, action
+ * buttons) disappear entirely when printing; everything else is reflowed
+ * for a plain, ink-friendly page. See lib/revision-hub/print.ts for why
+ * "PDF export" and "Print" both just trigger window.print() rather than
+ * shipping a separate PDF-generation path.
+ * ------------------------------------------------------------------- */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+
+  /* Sidebars, top nav, and the reading-progress bar are all structural
+     chrome that means nothing on paper. */
+  aside,
+  header {
+    display: none !important;
+  }
+
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+
+  /* Cards/tables/cheat-sheets keep their borders (useful structure on
+     paper) but drop shadows and hover-only affordances. */
+  * {
+    box-shadow: none !important;
+  }
+
+  /* Cheat sheet sections shouldn't split awkwardly across a page break. */
+  .cheat-sheet .break-inside-avoid {
+    break-inside: avoid;
+  }
+
+  table {
+    break-inside: auto;
+  }
+  tr {
+    break-inside: avoid;
+  }
+}

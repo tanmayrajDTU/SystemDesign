@@ -1,0 +1,68 @@
+[
+  {
+    "slug": "top-interview-questions",
+    "title": "Top Interview Questions",
+    "description": "The questions that come up again and again, with room to bookmark the ones you keep missing.",
+    "body": ""
+  },
+  {
+    "slug": "topic-wise-revision-sheets",
+    "title": "Topic-wise Revision Sheets",
+    "description": "One dense sheet per topic — everything you'd want to re-read the night before, grouped the way you actually study.",
+    "body": ""
+  },
+  {
+    "slug": "cheat-sheets",
+    "title": "Cheat Sheets",
+    "description": "Compact, print-friendly reference sheets — formulas, defaults, and things you'd otherwise have to search for.",
+    "body": ""
+  },
+  {
+    "slug": "flashcards",
+    "title": "Flashcards",
+    "description": "Flip through key terms and definitions. Fully keyboard-navigable for fast, heads-down drilling.",
+    "body": ""
+  },
+  {
+    "slug": "comparison-tables",
+    "title": "Comparison Tables",
+    "description": "SQL vs NoSQL, REST vs gRPC, OT vs CRDT — the trade-off tables that answer 'when would you use X instead of Y'.",
+    "body": ""
+  },
+  {
+    "slug": "decision-guides",
+    "title": "Decision Guides",
+    "description": "Click-through decision trees for the recurring 'which approach fits here' questions in a system design interview.",
+    "body": ""
+  },
+  {
+    "slug": "common-interview-mistakes",
+    "title": "Common Interview Mistakes",
+    "description": "The specific ways candidates lose points on otherwise-good answers — and what to say instead.",
+    "body": ""
+  },
+  {
+    "slug": "real-interview-nuggets",
+    "title": "Real Interview Nuggets",
+    "description": "Specific, concrete details worth having ready — the kind of remark that signals real depth in an interview.",
+    "body": ""
+  },
+  {
+    "slug": "3-hour-revision-roadmap",
+    "title": "3 Hour Revision Roadmap",
+    "description": "A single guided path through everything above, sized for the afternoon before an interview.",
+    "body": ""
+  },
+  {
+    "slug": "top-100-concepts",
+    "title": "Top 100 Concepts",
+    "description": "The 100 terms most likely to come up, each with a one-line definition you can confirm at a glance.",
+    "body": ""
+  },
+  {
+    "slug": "interview-speed-notes",
+    "title": "Interview Speed Notes",
+    "description": "The absolute-minimum-words version of every topic — for a last skim right before you walk in.",
+    "body": ""
+  }
+]

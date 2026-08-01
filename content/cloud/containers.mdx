@@ -47,7 +47,7 @@ A container image is built in layers — a base layer (e.g. a minimal Linux dist
 
 Two Linux kernel mechanisms do the heavy lifting: **namespaces** give a container its own isolated view of processes, network interfaces, and the filesystem (so it can't see or interfere with other containers), while **cgroups** (control groups) limit how much CPU, memory, and I/O a container can consume, preventing one container from starving the others on the same host.
 
-<Callout type="info" title="Containers are not lightweight VMs">
+<Callout type="note" title="Containers are not lightweight VMs">
 A common misconception is that a container is just a "small VM." It isn't — a container shares the host's kernel directly, while a VM virtualizes hardware and runs a completely separate kernel. This is why containers start in milliseconds and VMs take seconds to minutes, but also why a container provides weaker isolation than a VM: a kernel-level vulnerability can potentially affect every container on a host, whereas a hypervisor-level VM boundary is a stronger security barrier.
 </Callout>
 

@@ -211,6 +211,7 @@ export const NAVIGATION: NavSection[] = [
     items: [
       { title: "URL Shortener", slug: "case-studies/url-shortener" },
       { title: "YouTube", slug: "case-studies/youtube" },
+      { title: "YouTube Storage", slug: "case-studies/youtube-storage" },
       { title: "Netflix", slug: "case-studies/netflix" },
       { title: "WhatsApp", slug: "case-studies/whatsapp" },
       { title: "Instagram", slug: "case-studies/instagram" },
@@ -369,6 +370,8 @@ export const READY_SLUGS = new Set<string>([
   "case-studies/google-drive",
   "case-studies/amazon-cart",
   "case-studies/news-feed",
+  "case-studies/youtube-storage",
+  "case-studies/hotel-booking",
   "security/authentication",
   "security/authorization",
   "security/oauth",

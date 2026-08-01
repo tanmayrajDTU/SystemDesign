@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/generate-search-index.mjs && next build",
+    "build": "node scripts/generate-search-index.mjs && node scripts/generate-revision-search-index.mjs && next build",
     "start": "next start",
     "lint": "next lint",
-    "index": "node scripts/generate-search-index.mjs"
+    "index": "node scripts/generate-search-index.mjs && node scripts/generate-revision-search-index.mjs"
   },
   "dependencies": {
     "next": "14.2.35",

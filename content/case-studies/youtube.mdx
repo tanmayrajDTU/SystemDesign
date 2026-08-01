@@ -66,7 +66,7 @@ flowchart LR
 - **Transcoding workers** pull jobs and encode the source video into multiple resolutions and bitrates (e.g. 240p through 4K) and formats, split into short segments (a few seconds each) — this is what enables **adaptive bitrate streaming**, where a player can switch resolution mid-playback as network conditions change, without re-buffering the whole video.
 - Transcoding a single video into many resolutions is itself parallelized across workers (different resolutions, or different segments of the same resolution, processed concurrently) since it's CPU-intensive and would otherwise be a slow, serial bottleneck.
 
-<Callout type="info" title="Chunked, resolution-ladder streaming is the core playback trick">
+<Callout type="note" title="Chunked, resolution-ladder streaming is the core playback trick">
 Video isn't served as one giant file. It's split into short segments (commonly a few seconds each) at each supported resolution — a "resolution ladder." The player requests segments one at a time and picks the resolution for the *next* segment based on currently measured network throughput, which is what lets playback adapt smoothly rather than stalling outright when bandwidth drops.
 </Callout>
 

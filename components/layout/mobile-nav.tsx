@@ -5,7 +5,15 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 
-export function MobileNav() {
+export function MobileNav({
+  title = "Contents",
+  renderSidebar,
+}: {
+  title?: string;
+  /** Defaults to the main docs Sidebar for backward compatibility — pass a
+   * different renderer (e.g. RevisionSidebar) for other sections. */
+  renderSidebar?: (onNavigate: () => void) => React.ReactNode;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -23,14 +31,18 @@ export function MobileNav() {
         <Dialog.Content className="fixed inset-y-0 left-0 z-50 w-72 bg-surface dark:bg-surface-dark lg:hidden">
           <Dialog.Title className="sr-only">Navigation</Dialog.Title>
           <div className="flex items-center justify-between border-b border-border dark:border-border-dark px-4 py-3">
-            <span className="font-display text-sm font-semibold">Contents</span>
+            <span className="font-display text-sm font-semibold">{title}</span>
             <Dialog.Close asChild>
               <button aria-label="Close navigation">
                 <X size={18} />
               </button>
             </Dialog.Close>
           </div>
-          <Sidebar onNavigate={() => setOpen(false)} />
+          {renderSidebar ? (
+            renderSidebar(() => setOpen(false))
+          ) : (
+            <Sidebar onNavigate={() => setOpen(false)} />
+          )}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

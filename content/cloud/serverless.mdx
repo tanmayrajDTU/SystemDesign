@@ -41,7 +41,7 @@ Serverless platforms manage the entire execution lifecycle: provisioning an exec
 
 When a function hasn't run recently, the platform needs to provision a fresh execution environment before running it — a **cold start** — which adds latency compared to a **warm start**, where an existing, already-initialized environment can be reused. Providers mitigate cold starts through techniques like keeping a small pool of warm instances or offering "provisioned concurrency" for latency-sensitive functions, at an additional cost that offsets some of serverless's pay-per-use benefit.
 
-<Callout type="info" title="Serverless still runs on servers">
+<Callout type="note" title="Serverless still runs on servers">
 "Serverless" doesn't mean there are no servers — it means the developer never has to think about them. The provider still runs and manages physical or virtual servers underneath; the entire point of the model is that this management is abstracted away completely from the person writing and deploying the function.
 </Callout>
 
