@@ -69,7 +69,7 @@ export default async function DocPage({ params }: { params: { slug: string[] } }
             </span>
           )}
         </div>
-        <h1 className="mb-3 font-display text-3xl font-semibold text-ink dark:text-ink-dark">
+        <h1 className="mb-3 font-display text-3xl font-bold bg-gradient-to-r from-signal-600 via-signal-500 to-amber-500 bg-clip-text text-transparent">
           {doc.frontmatter.title}
         </h1>
         {doc.frontmatter.description && (

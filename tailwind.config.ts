@@ -32,12 +32,12 @@ const config: Config = {
           "muted-dark": "#8B93A1",
         },
         signal: {
-          50: "#EEF4FF",
-          200: "#BBD3FF",
-          400: "#7AAAFF",
-          500: "#4C8DFF",
-          600: "#2E6FE0",
-          700: "#2258B8",
+          50: "#FFF1F2",
+          200: "#FECDD3",
+          400: "#FB7185",
+          500: "#F43F5E",
+          600: "#E11D48",
+          700: "#BE123C",
         },
         amber: {
           400: "#F5C94B",
@@ -57,7 +57,7 @@ const config: Config = {
           css: {
             "--tw-prose-body": "#1A1D23",
             "--tw-prose-headings": "#1A1D23",
-            "--tw-prose-links": "#2E6FE0",
+            "--tw-prose-links": "#E11D48",
             "--tw-prose-bold": "#1A1D23",
             "--tw-prose-code": "#1A1D23",
             maxWidth: "none",
