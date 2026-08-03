@@ -74,8 +74,8 @@ export function DecisionTree({ root }: { root: DecisionNode }) {
           </div>
         </div>
       ) : (
-        <div className="rounded-lg border border-success/30 bg-success/5 p-4">
-          <p className="font-display text-base font-semibold text-emerald-700 dark:text-emerald-400">
+        <div className="rounded-lg border border-success-500/30 bg-success-500/5 p-4">
+          <p className="font-display text-base font-semibold text-success-700 dark:text-success-400">
             {current.result}
           </p>
           {current.rationale && (

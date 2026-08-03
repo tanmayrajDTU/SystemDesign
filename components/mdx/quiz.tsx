@@ -40,9 +40,9 @@ export function Quiz({ questions }: { questions: Question[] }) {
                       className={`flex items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition-colors
                         ${
                           answered && isCorrect
-                            ? "border-success/40 bg-success/10 text-emerald-700 dark:text-emerald-400"
+                            ? "border-success-500/40 bg-success-500/10 text-success-700 dark:text-success-400"
                             : answered && isChosen && !isCorrect
-                            ? "border-danger/40 bg-danger/10 text-red-700 dark:text-red-400"
+                            ? "border-danger-500/40 bg-danger-500/10 text-danger-700 dark:text-danger-400"
                             : "border-border dark:border-border-dark hover:border-signal-500/50"
                         }
                         ${answered ? "cursor-default" : "cursor-pointer"}`}

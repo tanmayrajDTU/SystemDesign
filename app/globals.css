@@ -52,16 +52,20 @@ input:focus-visible,
 /* Prose (mdx content) tuning */
 .prose-docs {
   @apply prose dark:prose-invert prose-headings:font-display prose-headings:font-semibold
-    prose-h1:text-3xl prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-4 prose-h3:text-lg
+    prose-h1:text-3xl prose-h1:text-ink dark:prose-h1:text-ink-dark
+    prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-4 prose-h3:text-lg prose-h3:mt-8
     prose-h2:text-signal-600 dark:prose-h2:text-signal-400 prose-h2:border-l-4 prose-h2:border-signal-500 prose-h2:pl-4
-    prose-h3:text-rose-500 dark:prose-h3:text-rose-400
-    prose-strong:text-signal-700 dark:prose-strong:text-rose-300 prose-strong:bg-rose-50 dark:prose-strong:bg-rose-950/40 prose-strong:px-1 prose-strong:py-0.5 prose-strong:rounded
-    prose-a:text-signal-600 dark:prose-a:text-signal-400 prose-a:no-underline hover:prose-a:underline
+    prose-h3:text-accent-600 dark:prose-h3:text-accent-400
+    prose-h4:text-teal-600 dark:prose-h4:text-teal-400
+    prose-strong:text-signal-700 dark:prose-strong:text-signal-200 prose-strong:bg-signal-50 dark:prose-strong:bg-signal-500/10 prose-strong:px-1 prose-strong:py-0.5 prose-strong:rounded prose-strong:font-semibold
+    prose-em:text-accent-700 dark:prose-em:text-accent-400
+    prose-a:text-signal-600 dark:prose-a:text-signal-400 prose-a:font-medium prose-a:no-underline prose-a:underline-offset-2 hover:prose-a:underline
     prose-code:before:content-none prose-code:after:content-none
-    prose-code:text-signal-600 dark:prose-code:text-signal-400 prose-code:bg-signal-50/60 dark:prose-code:bg-signal-500/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+    prose-code:text-info-700 dark:prose-code:text-info-400 prose-code:bg-info-50/70 dark:prose-code:bg-info-500/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-medium
     prose-pre:bg-transparent prose-pre:p-0
     prose-li:marker:text-signal-500 dark:prose-li:marker:text-signal-400
-    prose-blockquote:border-l-4 prose-blockquote:border-signal-500 prose-blockquote:bg-rose-50/30 dark:prose-blockquote:bg-rose-950/20 prose-blockquote:text-ink-muted dark:prose-blockquote:text-ink-muted-dark prose-blockquote:rounded-r-lg prose-blockquote:pl-4 prose-blockquote:py-2 prose-blockquote:my-6 prose-blockquote:not-italic
+    prose-td:text-ink dark:prose-td:text-ink-dark prose-th:text-ink dark:prose-th:text-ink-dark
+    prose-blockquote:border-l-4 prose-blockquote:border-accent-500 prose-blockquote:bg-accent-50/40 dark:prose-blockquote:bg-accent-500/10 prose-blockquote:text-ink-muted dark:prose-blockquote:text-ink-muted-dark prose-blockquote:rounded-r-lg prose-blockquote:pl-4 prose-blockquote:py-2 prose-blockquote:my-6 prose-blockquote:not-italic
     max-w-none;
 }
 

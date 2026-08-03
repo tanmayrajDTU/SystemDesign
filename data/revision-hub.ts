@@ -48,6 +48,18 @@ export const REVISION_DIFFICULTIES = ["Beginner", "Intermediate", "Advanced"] as
 
 export const REVISION_HUB_SECTIONS: RevisionSection[] = [
   {
+    slug: "quick-revision",
+    title: "Quick Revision",
+    description: "Rapid-fire through concepts and interview questions, one card at a time — filter by topic/difficulty, shuffle, and skip anything you've already nailed.",
+    icon: "Rocket",
+    componentHint: "flashcards",
+    supportsDifficultyFilter: true,
+    supportsTopicFilter: true,
+    supportsBookmarks: true,
+    supportsMarkAsRevised: true,
+    estimatedMinutes: 20,
+  },
+  {
     slug: "top-interview-questions",
     title: "Top Interview Questions",
     description: "The questions that come up again and again, with room to bookmark the ones you keep missing.",

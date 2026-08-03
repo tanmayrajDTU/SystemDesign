@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, Quote } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { Badge, difficultyTone } from "@/components/ui/badge";
 import { BookmarkButton } from "./bookmark-button";
 import { MarkRevisedButton } from "./mark-revised-button";
 import type { InterviewQuestionItem } from "@/lib/revision-hub/types";
@@ -24,8 +24,8 @@ export function InterviewQuestion({
         <div className="min-w-0">
           <p className="text-sm font-medium leading-relaxed text-ink dark:text-ink-dark">{question}</p>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            {topic && <Badge>{topic}</Badge>}
-            {difficulty && <Badge>{difficulty}</Badge>}
+            {topic && <Badge tone="info">{topic}</Badge>}
+            {difficulty && <Badge tone={difficultyTone(difficulty)}>{difficulty}</Badge>}
             {source && (
               <span className="flex items-center gap-1 text-xs text-ink-muted dark:text-ink-muted-dark">
                 <Quote size={10} /> {source}

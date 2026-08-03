@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ExternalLink, Lightbulb, AlertTriangle, Scale, Brain, MapPin } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge, difficultyTone } from "@/components/ui/badge";
 import { Mermaid } from "@/components/mdx/mermaid-diagram";
 import { EstimatedTimeBadge } from "./estimated-time-badge";
 import { PrintButton } from "./print-button";
@@ -53,8 +53,8 @@ export function ConceptRevisionSheet({ concept }: { concept: ConceptRevisionCont
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Badge>{concept.topic}</Badge>
-          <Badge>{concept.difficulty}</Badge>
+          <Badge tone="info">{concept.topic}</Badge>
+          <Badge tone={difficultyTone(concept.difficulty)}>{concept.difficulty}</Badge>
           <EstimatedTimeBadge minutes={concept.estimatedMinutes} />
         </div>
         {concept.docLinks.length > 0 && (
@@ -201,7 +201,7 @@ export function ConceptRevisionSheet({ concept }: { concept: ConceptRevisionCont
 
       {/* Memory trick */}
       <Section title="Memory trick" icon={<Brain size={16} />}>
-        <div className="rounded-xl border border-border dark:border-border-dark bg-surface-raised dark:bg-surface-raised-dark p-4 text-sm leading-relaxed text-ink dark:text-ink-dark">
+        <div className="rounded-xl border border-accent-500/30 bg-accent-500/5 p-4 text-sm leading-relaxed text-ink dark:text-ink-dark">
           {concept.memoryTrick}
         </div>
       </Section>

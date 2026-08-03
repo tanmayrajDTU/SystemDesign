@@ -4,23 +4,23 @@ import type { ReactNode } from "react";
 const STYLES = {
   note: {
     icon: Info,
-    classes: "border-signal-500/30 bg-signal-500/5 text-signal-700 dark:text-signal-400",
+    classes: "border-accent-500/30 bg-accent-500/5 text-accent-700 dark:text-accent-400",
   },
   tip: {
     icon: Lightbulb,
-    classes: "border-success/30 bg-success/5 text-emerald-700 dark:text-emerald-400",
+    classes: "border-success-500/30 bg-success-500/5 text-success-700 dark:text-success-400",
   },
   warning: {
     icon: AlertTriangle,
-    classes: "border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-400",
+    classes: "border-amber-600/30 bg-amber-500/5 text-amber-700 dark:text-amber-400",
   },
   info: {
     icon: Info,
-    classes: "border-signal-500/30 bg-signal-500/5 text-signal-700 dark:text-signal-400",
+    classes: "border-info-500/30 bg-info-500/5 text-info-700 dark:text-info-400",
   },
   danger: {
     icon: ShieldAlert,
-    classes: "border-danger/30 bg-danger/5 text-red-700 dark:text-red-400",
+    classes: "border-danger-500/30 bg-danger-500/5 text-danger-700 dark:text-danger-400",
   },
 } as const;
 

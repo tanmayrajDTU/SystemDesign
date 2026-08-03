@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, RotateCw, Keyboard } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge, difficultyTone } from "@/components/ui/badge";
 import { BookmarkButton } from "./bookmark-button";
 import { MarkRevisedButton } from "./mark-revised-button";
 import { useFlashcardShortcuts } from "@/lib/revision-hub/use-flashcard-shortcuts";
@@ -60,8 +60,10 @@ export function FlashcardDeck({ cards }: { cards: FlashcardItem[] }) {
       >
         {(card.topic || card.difficulty) && (
           <div className="flex gap-1.5">
-            {card.topic && <Badge>{card.topic}</Badge>}
-            {card.difficulty && <Badge>{card.difficulty}</Badge>}
+            {card.topic && <Badge tone="info">{card.topic}</Badge>}
+            {card.difficulty && (
+              <Badge tone={difficultyTone(card.difficulty)}>{card.difficulty}</Badge>
+            )}
           </div>
         )}
         <p className="text-sm leading-relaxed text-ink dark:text-ink-dark">

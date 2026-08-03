@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge, difficultyTone } from "@/components/ui/badge";
 import { BookmarkButton } from "./bookmark-button";
 import { MarkRevisedButton } from "./mark-revised-button";
 import type { SummaryCardData } from "@/lib/revision-hub/types";
@@ -23,8 +23,8 @@ export function SummaryCard({
       </div>
       {(topic || difficulty) && (
         <div className="flex flex-wrap gap-1.5">
-          {topic && <Badge>{topic}</Badge>}
-          {difficulty && <Badge>{difficulty}</Badge>}
+          {topic && <Badge tone="info">{topic}</Badge>}
+          {difficulty && <Badge tone={difficultyTone(difficulty)}>{difficulty}</Badge>}
         </div>
       )}
       <ul className="list-disc space-y-1.5 pl-4 text-sm leading-relaxed text-ink-muted dark:text-ink-muted-dark">

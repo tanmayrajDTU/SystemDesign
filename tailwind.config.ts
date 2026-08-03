@@ -25,27 +25,78 @@ const config: Config = {
           DEFAULT: "#E5E7EB",
           dark: "#1E2530",
         },
+        // Body text. `muted` is tuned to sit at ~5.9:1 / ~7.5:1 contrast
+        // against `bg` in light/dark mode respectively (AA-safe for small text).
         ink: {
           DEFAULT: "#1A1D23",
           dark: "#E4E7EC",
-          muted: "#6B7280",
-          "muted-dark": "#8B93A1",
+          muted: "#59626F",
+          "muted-dark": "#9AA2AF",
         },
+        // Brand accent (rose) — primary links, h2, top-level emphasis.
         signal: {
           50: "#FFF1F2",
+          100: "#FFE4E6",
           200: "#FECDD3",
           400: "#FB7185",
           500: "#F43F5E",
           600: "#E11D48",
           700: "#BE123C",
         },
+        // Informational accent (blue) — inline code, "info" callouts, technical terms.
+        info: {
+          50: "#EFF6FF",
+          100: "#DBEAFE",
+          400: "#60A5FA",
+          500: "#3B82F6",
+          600: "#2563EB",
+          700: "#1D4ED8",
+        },
+        // Secondary accent (violet) — h3/sub-headings, "note" callouts, secondary tags.
+        accent: {
+          50: "#F5F3FF",
+          100: "#EDE9FE",
+          400: "#A78BFA",
+          500: "#8B5CF6",
+          600: "#7C3AED",
+          700: "#6D28D9",
+        },
+        // Tertiary accent (teal) — category tags / supplementary highlights.
+        teal: {
+          50: "#F0FDFA",
+          100: "#CCFBF1",
+          400: "#2DD4BF",
+          500: "#14B8A6",
+          600: "#0D9488",
+          700: "#0F766E",
+        },
         amber: {
+          50: "#FFFBEB",
+          100: "#FEF3C7",
           400: "#F5C94B",
           500: "#F2B705",
           600: "#C99304",
+          700: "#B45309",
+          800: "#92400E",
         },
-        success: "#34D399",
-        danger: "#F87171",
+        success: {
+          DEFAULT: "#34D399",
+          50: "#ECFDF5",
+          100: "#D1FAE5",
+          400: "#34D399",
+          500: "#10B981",
+          600: "#059669",
+          700: "#047857",
+        },
+        danger: {
+          DEFAULT: "#F87171",
+          50: "#FEF2F2",
+          100: "#FEE2E2",
+          400: "#F87171",
+          500: "#EF4444",
+          600: "#DC2626",
+          700: "#B91C1C",
+        },
       },
       fontFamily: {
         display: ["var(--font-display)", "sans-serif"],
