@@ -1,4 +1,4 @@
-# System Design Docs
+# System Design Documentation 
 
 A documentation-quality, extensible learning site for System Design — Next.js App Router, TypeScript, Tailwind, MDX content, Mermaid diagrams, dark/light mode, ⌘K search, and interactive quizzes/flashcards.
 
